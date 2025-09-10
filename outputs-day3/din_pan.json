@@ -1,0 +1,53 @@
+{
+    "filename": "din_pan.jpg",
+    "raw_detected_text": [
+        "4 INCOME TAX DEPARTMENT ad GOVT. OF INDIA\n\n' | ward) eat Wea\n\nY Permanent Account Number\n\nH KQZPK5723F\n\n' Oi ielomauaeen Taek Rey\n\nH tee prays niece\n\nI || ste, ferfer/Date of Birth earns\n\n4 *BEaTETe/ Signature 2 Ne SSS ais ectepeswd, seed\n\n' Ra: IA Oa,\nne nr eon a Ue ee rns",
+        "bed",
+        "‘arror",
+        "Sache",
+        "—",
+        "Meche",
+        "Aled",
+        "we INCOME TAX DEPARTMENT",
+        "GOVT. OF INDIA",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "Permanent Account Number}\nKOZPK5723F",
+        "|",
+        "DRONES erecta\nPee deere nee\noo\n[ore Beccaresia cso Nss\n\ny+ ad",
+        "“TA */)Name\nDINESH KUMAR",
+        "ferf21 / Date of Birth’",
+        "",
+        "2 eh\nOia LEER.",
+        ""
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Name": "“TA */)Name\nDINESH KUMAR",
+        "Father’s Name": null,
+        "DOB": null,
+        "Number": null,
+        "Issuing Authority": null,
+        "Other Details": [
+            "4 INCOME TAX DEPARTMENT ad GOVT. OF INDIA\n\n' | ward) eat Wea\n\nY Permanent Account Number\n\nH KQZPK5723F\n\n' Oi ielomauaeen Taek Rey\n\nH tee prays niece\n\nI || ste, ferfer/Date of Birth earns\n\n4 *BEaTETe/ Signature 2 Ne SSS ais ectepeswd, seed\n\n' Ra: IA Oa,\nne nr eon a Ue ee rns",
+            "bed",
+            "‘arror",
+            "Sache",
+            "Meche",
+            "Aled",
+            "we INCOME TAX DEPARTMENT",
+            "GOVT. OF INDIA",
+            "Permanent Account Number}\nKOZPK5723F",
+            "DRONES erecta\nPee deere nee\noo\n[ore Beccaresia cso Nss\n\ny+ ad",
+            "“TA */)Name\nDINESH KUMAR",
+            "ferf21 / Date of Birth’",
+            "2 eh\nOia LEER."
+        ]
+    },
+    "document_type": "PAN Card"
+}

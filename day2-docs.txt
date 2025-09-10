@@ -1,0 +1,61 @@
+
+
+
+
+### Document Preprocessing Techniques
+Before sending the image to OCR, the script cleans and enhances it:
+- **Resize**: If the image is too large, it scales it down so that the biggest side is at most 1024 pixels. This makes processing faster without losing much detail.  
+- **Grayscale Conversion**: Converts the image to black and white, because text detection usually works better in grayscale.  
+- **Noise Removal**: Uses OpenCV’s *fastNlMeansDenoising* to smooth out unnecessary background noise.  
+- **Binarization (Thresholding)**: Applies an adaptive threshold to separate text (black) from the background (white). This makes the characters clearer for the OCR engines.  
+
+These steps are typical in OCR systems so that messy input images become easy to read for text extraction.
+
+***
+
+### Library Comparisons
+The script uses **three OCR systems**:
+
+- **Tesseract (Google’s OCR engine via `pytesseract`)**  
+  - Reads the preprocessed image.  
+  - Well-known, open-source, and fairly accurate for general text.  
+  - Slower than some newer methods and may struggle with fonts or distorted text.  
+
+- **EasyOCR**  
+  - Reads the raw image path (not preprocessed in this script).  
+  - Uses deep learning for text detection and recognition.  
+  - Works better on a variety of fonts, languages, and layouts than Tesseract in many cases.  
+  - Slightly slower to initialize, but often more accurate.  
+
+- **PaddleOCR (Placeholder here)**  
+  - The code has only a placeholder for PaddleOCR (another modern OCR library).  
+  - It’s designed for fast and highly accurate recognition, especially in Asian languages.  
+  - Not yet integrated into this script, but could be added as a real comparison.  
+
+Each OCR engine records two things:  
+- Extracted **text result**  
+- **Execution time in seconds**, so you can compare speed  
+
+***
+
+### API Details
+The system is wrapped as a Flask API, running on `http://0.0.0.0:5000/ocr`.  
+
+When you send a **GET request** to `/ocr`, here’s what happens:
+1. The image is preprocessed for Tesseract.  
+2. Tesseract and EasyOCR run on the image and capture their outputs and how long they took.  
+3. PaddleOCR returns a placeholder response.  
+4. The image itself is encoded into **Base64** (so it can be embedded directly in JSON).  
+5. The final result is built as a JSON response, for example:  
+   ```json
+   {
+       "Input_Image_Base64": "....",
+       "Tesseract": { "ocr_response": "...", "execution_time_sec": 0.321, "text_length": 45 },
+       "EasyOCR": { "ocr_response": "...", "execution_time_sec": 1.234, "text_length": 42 },
+       "PaddleOCR": { "ocr_response": "PaddleOCR integration placeholder", "execution_time_sec": 0.0, "text_length": 33 }
+   }
+   ```
+6. The JSON is also saved to a file (`output-day2/ocr_output.json`).  
+
+This way, you can compare results side by side to check which OCR performs best.
+
