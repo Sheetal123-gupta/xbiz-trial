@@ -12,9 +12,8 @@ app = Flask(__name__)
 OUTPUT_FOLDER = "outputs-day3"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# -----------------------------
+
 # OCR & Document Processing Logic
-# -----------------------------
 def process_document(image_path):
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -147,7 +146,7 @@ def home():
 @app.route('/process-manual', methods=['GET'])
 def process_manual_file():
     # You can manually provide the image name here
-    image_name = "din_pan.jpg"
+    image_name = "blur_pan.jpg"
     image_path = os.path.join(os.getcwd(), image_name)
     result = process_document(image_path)
     return jsonify(result)

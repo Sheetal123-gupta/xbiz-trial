@@ -1,0 +1,47 @@
+use opencv for image processing and tesseract for text extraction
+image procesing ke steps 
+load,grayscale me conversion karna,thresholding apply karna taki text or bg achese differ kare,dilate me regions extend karna , then contour detect karna
+
+take the image like load it tell where the directory so image output will,be stored 
+load the image using opencv
+convert into the grayscale reason is easy for contour detection
+apply thresholding which convert the color image into the binary image 
+since using the thresholding we are using otsu like it will convert the text into white and bg as black (THRESH_BINARY_INV)
+next 5*5 ka rectangular banyega 
+will expand the white region 
+will extract the outermost contour (RETR_EXTERNAL) and compress it (CHAIN_APPROX_SIMPLE)
+fir scan hoga text in y cordinate like vertical position me 
+
+will initialize flags like we are setting to false assuming no document type has been detected.
+
+had apply the regular expression 
+  - so in case of pancard it is 5 letter in uppercase then 4 numbers then 1 letter
+  - for aadhar card 4 number thrice with space
+  - and without too 
+  for driving license two character alphabet then 2 character either numbers or alphabet then remaining 11 will be alphanumeric
+
+will apply keyword matching patterns 
+
+will initialize a list for storing the answer
+apply for loop (doubt)
+get the boxes coordinate like x-top ,y-left w,h -width and height
+will draw green color boxes around it 
+roi(extract region of interest based on xywh) for allowing on useful area 
+will extract the text using tesseract where psm considering some block of region strip() for removing the whitespace 
+next text ko uppercase me dalenge or whitesapace remove kardenge taki jo pattern matching he wo achese kaam kar sake
+text ki cheezo ko wo blank list me dalenge like append matlab hi items ko end me add karna hota he
+ then based on keyword matching karemege if found to flags ko true kardenge 
+
+ afterwords looping me check karenge ki document ka jo pattern matching hua he to doc type pan he else jisme fit hoga wo 
+
+ next clean summary ke liye tha jo extra kiya tha 
+
+ now output ka format hoga filename jo dala he image path me , then jo bhi usne raw data extract kiya wo , fir cleaned summary ka output afterwords document type 
+
+ json jo file generate ho rahi he as well as jo image jisme green rectangular boxes he wo ek particular folder me dalega 
+
+and manually image name le rahe he wo current working directory lega so output jo generate hoga wo image_name .json ya image_name_output.jpg hoga 
+
+fir jo process_document function he usko call karega and json me output dega
+
+fir flask development server on karne ke liye {[debug=true means auto reloading],[and if agar mujhe port number change karna he to port=8080]}

@@ -1,0 +1,18 @@
+{
+    "filename": "blur_pan.jpg",
+    "raw_detected_text": [
+        "anaie fia fr an\nerarmmee Gly.\nr ad te tor at\n\nQ Parma en ari oo,\n\n> sanesracee\nPeriney\n\niar Sanaa\n\naves seeks . o-\n\nMoe Late vet ees"
+    ],
+    "cleaned_summary": {
+        "Document": "Unknown Document",
+        "Name": null,
+        "Father’s Name": null,
+        "DOB": null,
+        "Number": null,
+        "Issuing Authority": null,
+        "Other Details": [
+            "anaie fia fr an\nerarmmee Gly.\nr ad te tor at\n\nQ Parma en ari oo,\n\n> sanesracee\nPeriney\n\niar Sanaa\n\naves seeks . o-\n\nMoe Late vet ees"
+        ]
+    },
+    "document_type": "Unknown Document"
+}

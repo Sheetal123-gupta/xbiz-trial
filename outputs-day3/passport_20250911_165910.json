@@ -54,11 +54,11 @@
         "BY"
     ],
     "cleaned_summary": {
-        "Document": "Unknown Document",
+        "Document": "Passport",
         "Name": "erent eTaT =F / Given Name(s) |",
         "Father’s Name": null,
         "DOB": "29/07/2021",
-        "Number": null,
+        "Number": "Z6329838",
         "Issuing Authority": null,
         "Other Details": [
             "Seo. WRIST) REPUBLIC OF Gs\n- pan OWN 26329838\nINGALE\nAYESHA BHARAT\n15/03/1999 |\nPUNE ,MAHARASHTRA\nPUNE :\na Pity Dare of swe -eeerfet @ fivla / Dane of Expiry\nL 29/07/2021 28/07/2031\n. DINGALE<<AY E SHACBHARAT<<S<S5<55S 55555585\n5838<01ND9903159F3107287 107549380282 1<24",
@@ -90,5 +90,6 @@
             "29/07/2021"
         ]
     },
-    "document_type": "Unknown Document"
+    "document_type": "Passport",
+    "side": "Front"
 }
