@@ -136,9 +136,7 @@ def process_document(image_path):
 
     return output_data
 
-# -----------------------------
-# Flask API endpoint
-# -----------------------------
+
 @app.route('/')
 def home():
     return "Flask OCR API is running! Manual file processing available."
@@ -146,7 +144,7 @@ def home():
 @app.route('/process-manual', methods=['GET'])
 def process_manual_file():
     # You can manually provide the image name here
-    image_name = "blur_pan.jpg"
+    image_name = "din_pan.jpg"
     image_path = os.path.join(os.getcwd(), image_name)
     result = process_document(image_path)
     return jsonify(result)

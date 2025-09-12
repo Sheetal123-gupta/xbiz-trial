@@ -6,17 +6,165 @@ import json
 import os
 import time
 from flask import Flask, jsonify
+from rapidfuzz import fuzz
 
 app = Flask(__name__)
 
 # -----------------------------
 # Config
 # -----------------------------
+INPUT_FOLDER = "input_images"            # Folder containing input images
 OUTPUT_FOLDER = "outputs-day3"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # -----------------------------
-# OCR & Document Processing
+# Keyword dictionary
+# -----------------------------
+DOCUMENT_KEYWORDS = {
+    "PAN Card": [
+        "income tax department", "permanent account number", "govt of india", "father's name"
+    ],
+    "Aadhaar Card": [
+        "aadhaar", "uidai", "government of india", "year of birth", "date of birth", "gender"
+    ],
+    "Voter ID Card": [
+        "election commission of india", "voter id", "elector's photo identity card",
+        "elector's name", "sex", "epic"
+    ],
+    "Passport": [
+        "passport", "republic of india", "place of birth", "date of issue", "date of expiry"
+    ],
+    "Driving License": [
+        "driving license", "dl no", "valid till", "transport", "date of issue", "dob"
+    ],
+    "Bank Passbook": [
+        "account number", "ifsc", "branch", "customer id", "balance", "transaction", "a/c"
+    ]
+}
+
+# -----------------------------
+# Regex patterns
+# -----------------------------
+PAN_PATTERN = re.compile(r"^[A-Z]{5}[0-9]{4}[A-Z]$")
+AADHAR_PATTERN = re.compile(r"^\d{4}\s\d{4}\s\d{4}$")
+AADHAR_PATTERN_NOSPACE = re.compile(r"^\d{12}$")
+DL_NUMBER_PATTERN = re.compile(r"^[A-Z]{2}\d{2}[0-9A-Z]{11,}$")
+VOTER_PATTERN = re.compile(r"^[A-Z]{3}[0-9]{7}$")
+PASSPORT_PATTERN = re.compile(r"^[A-Z][0-9]{7}$")
+IFSC_PATTERN = re.compile(r"^[A-Z]{4}0[A-Z0-9]{6}$")
+
+# -----------------------------
+# Document classifier
+# -----------------------------
+def classify_document(raw_blocks):
+    all_text = " ".join(raw_blocks).lower()
+    scores = {}
+    for doc, keywords in DOCUMENT_KEYWORDS.items():
+        score = max(fuzz.partial_ratio(all_text, kw.lower()) for kw in keywords)
+        scores[doc] = score
+    best_doc = max(scores, key=scores.get)
+    return best_doc, scores
+
+# -----------------------------
+# Side classifier
+# -----------------------------
+def classify_side(doc_type, raw_blocks):
+    all_text = " ".join(raw_blocks).upper()
+    side = "Unknown"
+
+    def fuzzy_in(text, indicators, threshold=70):
+        for ind in indicators:
+            if fuzz.partial_ratio(text, ind.upper()) >= threshold:
+                return True
+        return False
+
+    if doc_type == "PAN Card":
+        if fuzzy_in(all_text, ["INCOME TAX DEPARTMENT", "PERMANENT ACCOUNT NUMBER", "GOVT. OF INDIA"]) \
+           or any(PAN_PATTERN.match(block.replace(" ", "")) for block in raw_blocks):
+            side = "Front"
+        elif fuzzy_in(all_text, ["QR CODE", "NSDL", "UTIITSL"]):
+            side = "Back"
+
+    elif doc_type == "Aadhaar Card":
+        if fuzzy_in(all_text, ["GOVERNMENT OF INDIA", "AADHAAR", "UIDAI", "DOB", "GENDER"]) \
+           or any(AADHAR_PATTERN.match(b) or AADHAR_PATTERN_NOSPACE.match(b) for b in raw_blocks):
+            side = "Front"
+        elif fuzzy_in(all_text, ["ADDRESS", "DISTRICT", "STATE", "PIN", "CARE OF"]):
+            side = "Back"
+
+    elif doc_type == "Voter ID Card":
+        if fuzzy_in(all_text, ["ELECTION COMMISSION OF INDIA", "ELECTOR'S PHOTO IDENTITY CARD", "NAME", "FATHER", "DOB"]) \
+           or any(VOTER_PATTERN.match(b) for b in raw_blocks):
+            side = "Front"
+        elif fuzzy_in(all_text, ["ADDRESS", "DISTRICT", "STATE", "PIN CODE", "ISSUE DATE"]):
+            side = "Back"
+
+    elif doc_type == "Passport":
+        if fuzzy_in(all_text, ["PASSPORT", "REPUBLIC OF INDIA", "NATIONALITY", "DATE OF BIRTH"]) \
+           or any(PASSPORT_PATTERN.match(b) for b in raw_blocks):
+            side = "Front"
+        elif fuzzy_in(all_text, ["ADDRESS", "EMERGENCY CONTACT", "PLACE OF ISSUE"]):
+            side = "Back"
+
+    elif doc_type == "Bank Passbook":
+        if fuzzy_in(all_text, ["ACCOUNT NUMBER", "IFSC", "BRANCH", "CUSTOMER ID", "SAVINGS ACCOUNT"]) \
+           or any(IFSC_PATTERN.match(b) for b in raw_blocks):
+            side = "Front"
+        elif fuzzy_in(all_text, ["DEPOSIT", "WITHDRAWAL", "BALANCE", "CHEQUE"]):
+            side = "Back"
+
+    return side
+
+# -----------------------------
+# Cleaned summary generator
+# -----------------------------
+def generate_cleaned_summary(blocks, doc_type):
+    summary = {
+        "Document": doc_type,
+        "Name": None,
+        "Father’s Name": None,
+        "DOB": None,
+        "Number": None,
+        "Issuing Authority": None,
+        "Other Details": []
+    }
+
+    for text in blocks:
+        clean_text = text.strip()
+        upper_text = clean_text.upper()
+
+        if "ELECTION COMMISSION OF INDIA" in upper_text:
+            summary["Issuing Authority"] = "Election Commission of India"
+        if "GOVERNMENT OF INDIA" in upper_text:
+            summary["Issuing Authority"] = "Government of India"
+
+        if "NAME" in upper_text and "FATHER" not in upper_text:
+            summary["Name"] = clean_text.split(":")[-1].strip()
+        if "FATHER" in upper_text:
+            summary["Father’s Name"] = clean_text.split(":")[-1].strip()
+
+        dob_match = re.search(r"\d{2}[-/]\d{2}[-/]\d{4}", clean_text)
+        if dob_match:
+            summary["DOB"] = dob_match.group()
+
+        if PAN_PATTERN.match(clean_text):
+            summary["Number"] = clean_text
+        elif AADHAR_PATTERN.match(clean_text) or AADHAR_PATTERN_NOSPACE.match(clean_text):
+            summary["Number"] = clean_text
+        elif DL_NUMBER_PATTERN.match(clean_text):
+            summary["Number"] = clean_text
+        elif VOTER_PATTERN.match(clean_text):
+            summary["Number"] = clean_text
+        elif PASSPORT_PATTERN.match(clean_text):
+            summary["Number"] = clean_text
+
+        if clean_text and len(clean_text) > 2:
+            summary["Other Details"].append(clean_text)
+
+    return summary
+
+# -----------------------------
+# Main OCR Processing
 # -----------------------------
 def process_document(image_path):
     image = cv2.imread(image_path)
@@ -30,198 +178,71 @@ def process_document(image_path):
     contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
 
-    # Flags
-    is_pan = False
-    is_aadhar = False
-    is_bank_passbook = False
-    is_driving_license = False
-    is_voter_id = False
-    is_passport = False
-
-    # Regex patterns
-    pan_pattern = re.compile(r"^[A-Z]{5}[0-9]{4}[A-Z]$")
-    aadhar_pattern = re.compile(r"^\d{4}\s\d{4}\s\d{4}$")
-    aadhar_pattern_nospace = re.compile(r"^\d{12}$")
-    dl_number_pattern = re.compile(r"^[A-Z]{2}\d{2}[0-9A-Z]{11,}$")
-    voter_pattern = re.compile(r"^[A-Z]{3}[0-9]{7}$")
-    passport_pattern = re.compile(r"^[A-Z][0-9]{7}$")
-    ifsc_pattern = re.compile(r"^[A-Z]{4}0[A-Z0-9]{6}$")
-
-    # Keywords
-    bank_keywords = ["IFSC", "CIF", "ACCOUNT", "A/C", "SAVING", "SB A/C", "CURRENT"]
-    dl_keywords = ["DRIVING LICENCE", "DRIVING LICENSE", "DL NO", "VALID TILL", "DATE OF ISSUE", "DOB"]
-    voter_keywords = ["ELECTION COMMISSION OF INDIA", "VOTER ID", "ELECTOR'S PHOTO IDENTITY CARD"]
-    passport_keywords = ["PASSPORT", "REPUBLIC OF INDIA"]
-
     extracted_blocks = []
-
-    # OCR block by block
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.rectangle(image,(x,y),(x+w,y+h),(0,255,0),2)
         roi = image[y:y+h, x:x+w]
         text = pytesseract.image_to_string(roi, config="--psm 6").strip()
-        text_clean = text.upper().replace(" ", "")
-        extracted_blocks.append(text)
+        if text:
+            extracted_blocks.append(text)
 
-        # Detect PAN
-        if "PERMANENTACCOUNTNUMBER" in text_clean or "INCOMETAXDEPARTMENT" in text_clean or pan_pattern.match(text_clean):
-            is_pan = True
-        # Detect Aadhaar
-        if aadhar_pattern.match(text.strip()) or aadhar_pattern_nospace.match(text.strip()) or "GOVERNMENTOFINDIA" in text_clean:
-            is_aadhar = True
-        # Detect Bank
-        for keyword in bank_keywords:
-            if keyword in text.upper():
-                is_bank_passbook = True
-        # Detect DL
-        for keyword in dl_keywords:
-            if keyword in text.upper() or dl_number_pattern.match(text_clean):
-                is_driving_license = True
-        # Detect Voter
-        for keyword in voter_keywords:
-            if keyword in text.upper() or voter_pattern.match(text.strip()):
-                is_voter_id = True
-        # Detect Passport
-        for keyword in passport_keywords:
-            if keyword in text.upper() or passport_pattern.match(text.strip()):
-                is_passport = True
+    # Document classification
+    doc_type, fuzzy_scores = classify_document(extracted_blocks)
 
-    doc_type = "Unknown Document"
-    if is_pan:
-        doc_type = "PAN Card"
-    elif is_aadhar:
-        doc_type = "Aadhaar Card"
-    elif is_bank_passbook:
-        doc_type = "Bank Passbook"
-    elif is_driving_license:
-        doc_type = "Driving License"
-    elif is_voter_id:
-        doc_type = "Voter ID Card"
-    elif is_passport:
-        doc_type = "Passport"
+    # Side classification
+    side = classify_side(doc_type, extracted_blocks)
 
-    side = "Unknown"
-    all_text = " ".join(extracted_blocks).upper()
-
-    if doc_type == "PAN Card":
-        front_indicators = ["INCOME TAX DEPARTMENT", "PERMANENT ACCOUNT NUMBER", "GOVT. OF INDIA", "GOVERNMENT OF INDIA", "NAME", "FATHER", "DATE OF BIRTH"]
-        back_indicators = ["QR CODE", "SCAN THIS CODE", "VERIFY AUTHENTICITY", "NSDL", "UTIITSL"]
-        has_pan_number = any(pan_pattern.match(block.replace(" ", "")) for block in extracted_blocks)
-        if any(ind in all_text for ind in front_indicators) or has_pan_number:
-            side = "Front"
-        elif any(ind in all_text for ind in back_indicators):
-            side = "Back"
-
-    elif doc_type == "Aadhaar Card":
-        front_indicators = ["GOVERNMENT OF INDIA", "UNIQUE IDENTIFICATION AUTHORITY OF INDIA", "AADHAAR", "NAME", "DOB", "GENDER"]
-        back_indicators = ["ADDRESS", "DISTRICT", "STATE", "PIN", "C/O", "CARE OF", "MOBILE"]
-        has_aadhar_number = any(aadhar_pattern.match(block.strip()) or aadhar_pattern_nospace.match(block.strip()) for block in extracted_blocks)
-        if any(ind in all_text for ind in front_indicators) or has_aadhar_number:
-            side = "Front"
-        elif any(ind in all_text for ind in back_indicators):
-            side = "Back"
-
-    elif doc_type == "Voter ID Card":
-        front_indicators = ["ELECTION COMMISSION OF INDIA", "VOTER ID", "ELECTOR'S PHOTO IDENTITY CARD", "NAME", "FATHER", "DOB", "GENDER"]
-        back_indicators = ["ADDRESS", "DISTRICT", "STATE", "PIN CODE", "C/O", "CARE OF", "ISSUE DATE"]
-        has_voter_number = any(voter_pattern.match(block.strip()) for block in extracted_blocks)
-        if any(ind in all_text for ind in front_indicators) or has_voter_number:
-            side = "Front"
-        elif any(ind in all_text for ind in back_indicators):
-            side = "Back"
-
-    elif doc_type == "Passport":
-        front_indicators = ["REPUBLIC OF INDIA", "PASSPORT", "NAME", "NATIONALITY", "DATE OF BIRTH", "SEX"]
-        back_indicators = ["ADDRESS", "EMERGENCY CONTACT", "PLACE OF ISSUE", "ISSUING AUTHORITY"]
-        has_passport_number = any(passport_pattern.match(block.strip()) for block in extracted_blocks)
-        if any(ind in all_text for ind in front_indicators) or has_passport_number:
-            side = "Front"
-        elif any(ind in all_text for ind in back_indicators):
-            side = "Back"
-
-    elif doc_type == "Bank Passbook":
-        front_indicators = ["ACCOUNT NUMBER", "IFSC", "BRANCH", "MICR", "CUSTOMER ID", "SAVINGS ACCOUNT", "CURRENT ACCOUNT"]
-        back_indicators = ["DEPOSIT", "WITHDRAWAL", "BALANCE", "CHEQUE NO", "NARRATION"]
-        has_ifsc = any(ifsc_pattern.match(block.strip()) for block in extracted_blocks)
-        if any(ind in all_text for ind in front_indicators) or has_ifsc:
-            side = "Front"
-        elif any(ind in all_text for ind in back_indicators):
-            side = "Back"
-
-    def generate_cleaned_summary(blocks, doc_type):
-        summary = {
-            "Document": doc_type,
-            "Name": None,
-            "Father’s Name": None,
-            "DOB": None,
-            "Number": None,
-            "Issuing Authority": None,
-            "Other Details": []
-        }
-
-        for text in blocks:
-            clean_text = text.strip()
-            if "ELECTION COMMISSION OF INDIA" in clean_text.upper():
-                summary["Issuing Authority"] = "Election Commission of India"
-            if "GOVERNMENT OF INDIA" in clean_text.upper():
-                summary["Issuing Authority"] = "Government of India"
-            if "NAME" in clean_text.upper() and "FATHER" not in clean_text.upper():
-                summary["Name"] = clean_text.split(":")[-1].strip()
-            if "FATHER" in clean_text.upper():
-                summary["Father’s Name"] = clean_text.split(":")[-1].strip()
-            dob_match = re.search(r"\d{2}[-/]\d{2}[-/]\d{4}", clean_text)
-            if dob_match:
-                summary["DOB"] = dob_match.group()
-            if pan_pattern.match(clean_text):
-                summary["Number"] = clean_text
-            elif aadhar_pattern.match(clean_text) or aadhar_pattern_nospace.match(clean_text):
-                summary["Number"] = clean_text
-            elif dl_number_pattern.match(clean_text):
-                summary["Number"] = clean_text
-            elif voter_pattern.match(clean_text):
-                summary["Number"] = clean_text
-            elif passport_pattern.match(clean_text):
-                summary["Number"] = clean_text
-            if clean_text and len(clean_text) > 2:
-                summary["Other Details"].append(clean_text)
-        return summary
-
+    # Generate cleaned summary
     summary = generate_cleaned_summary(extracted_blocks, doc_type)
 
+    # Output
     output_data = {
         "filename": os.path.basename(image_path),
         "raw_detected_text": extracted_blocks,
         "cleaned_summary": summary,
         "document_type": doc_type,
-        "side": side
+        "side": side,
+        "fuzzy_scores": fuzzy_scores
     }
 
-    # Save output JSON with timestamp to avoid overwrite
+    # Save output JSON
     ts = time.strftime("%Y%m%d_%H%M%S")
     base_name = os.path.splitext(os.path.basename(image_path))[0]
     json_filename = os.path.join(OUTPUT_FOLDER, f"{base_name}_{ts}.json")
     with open(json_filename, "w", encoding="utf-8") as f:
         json.dump(output_data, f, ensure_ascii=False, indent=4)
 
-    # Save output image
+    # Save processed image
     result_image_path = os.path.join(OUTPUT_FOLDER, f"{base_name}_{ts}_output.jpg")
     cv2.imwrite(result_image_path, image)
+
     return output_data
 
-
+# -----------------------------
+# Flask Routes
+# -----------------------------
 @app.route('/')
 def home():
-    return "Flask OCR API is running! Use /process-manual to test."
+    return "Flask OCR API with fuzzy classification is running!"
 
-@app.route('/process-manual', methods=['GET'])
-def process_manual_file():
-    # Replace with your test file
-    image_name = "an_voter.jpg"
-    image_path = os.path.join(os.getcwd(), image_name)
+@app.route('/process-all', methods=['GET'])
+def process_all_files():
+    results = []
+    for file_name in os.listdir(INPUT_FOLDER):
+        if file_name.lower().endswith((".jpg", ".jpeg", ".png")):
+            image_path = os.path.join(INPUT_FOLDER, file_name)
+            result = process_document(image_path)
+            results.append(result)
+    return jsonify(results)
+
+@app.route('/process/<filename>', methods=['GET'])
+def process_single_file(filename):
+    image_path = os.path.join(INPUT_FOLDER, filename)
+    if not os.path.exists(image_path):
+        return jsonify({"error": f"File {filename} not found in {INPUT_FOLDER}"}), 404
     result = process_document(image_path)
     return jsonify(result)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
