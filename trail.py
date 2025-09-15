@@ -5,18 +5,19 @@ import re
 import json
 import os
 import time
-from flask import Flask, jsonify
-
-app = Flask(__name__)
 
 # -----------------------------
 # Config
 # -----------------------------
-OUTPUT_FOLDER = "outputs-day3"
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+INPUT_FOLDER = "images1"
+OUTPUT_DETECTED = "detected_json"
+OUTPUT_UNKNOWN = "unknown_json"
+
+os.makedirs(OUTPUT_DETECTED, exist_ok=True)
+os.makedirs(OUTPUT_UNKNOWN, exist_ok=True)
 
 # -----------------------------
-# OCR & Document Processing
+# Document Processing
 # -----------------------------
 def process_document(image_path):
     image = cv2.imread(image_path)
@@ -104,6 +105,7 @@ def process_document(image_path):
     side = "Unknown"
     all_text = " ".join(extracted_blocks).upper()
 
+    # Side detection
     if doc_type == "PAN Card":
         front_indicators = ["INCOME TAX DEPARTMENT","INCOME TAX" ,"PAN","PERMANENT ACCOUNT NUMBER", "GOVT. OF INDIA", "GOVERNMENT OF INDIA", "NAME", "FATHER", "DATE OF BIRTH"]
         back_indicators = ["QR CODE", "SCAN THIS CODE", "VERIFY AUTHENTICITY", "NSDL", "UTIITSL"]
@@ -159,7 +161,6 @@ def process_document(image_path):
             "Issuing Authority": None,
             "Other Details": []
         }
-
         for text in blocks:
             clean_text = text.strip()
             if "ELECTION COMMISSION OF INDIA" in clean_text.upper():
@@ -197,31 +198,35 @@ def process_document(image_path):
         "side": side
     }
 
-    # Save output JSON with timestamp to avoid overwrite
-    ts = time.strftime("%Y%m%d_%H%M%S")
-    base_name = os.path.splitext(os.path.basename(image_path))[0]
-    json_filename = os.path.join(OUTPUT_FOLDER, f"{base_name}_{ts}.json")
-    with open(json_filename, "w", encoding="utf-8") as f:
-        json.dump(output_data, f, ensure_ascii=False, indent=4)
-
-    # Save output image
-    result_image_path = os.path.join(OUTPUT_FOLDER, f"{base_name}_{ts}_output.jpg")
-    cv2.imwrite(result_image_path, image)
-    return output_data
+    return output_data, image
 
 
-@app.route('/')
-def home():
-    return "Flask OCR API is running! Use /process-manual to test."
+# -----------------------------
+# Process all images in folder
+# -----------------------------
+for filename in os.listdir(INPUT_FOLDER):
+    if filename.lower().endswith((".jpg", ".jpeg", ".png", ".tif", ".tiff")):
+        img_path = os.path.join(INPUT_FOLDER, filename)
+        print(f"\n📂 Processing: {filename}")
 
-@app.route('/process-manual', methods=['GET'])
-def process_manual_file():
-    # Replace with your test file
-    image_name = "pan3.jpg"
-    image_path = os.path.join(os.getcwd(), image_name)
-    result = process_document(image_path)
-    return jsonify(result)
+        result, output_img = process_document(img_path)
 
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        base_name = os.path.splitext(filename)[0]
 
-if __name__ == "__main__":
-    app.run(debug=True)
+        # Decide folder (detected or unknown)
+        if result["document_type"] != "Unknown Document":
+            json_folder = OUTPUT_DETECTED
+        else:
+            json_folder = OUTPUT_UNKNOWN
+
+        # Save JSON
+        json_filename = os.path.join(json_folder, f"{base_name}_{ts}.json")
+        with open(json_filename, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=4)
+
+        # Save output image
+        img_filename = os.path.join(json_folder, f"{base_name}_{ts}_output.jpg")
+        cv2.imwrite(img_filename, output_img)
+
+        print(f"✅ Saved JSON + image to {json_folder}")

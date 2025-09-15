@@ -144,7 +144,7 @@ def home():
 @app.route('/process-manual', methods=['GET'])
 def process_manual_file():
     # You can manually provide the image name here
-    image_name = "din_pan.jpg"
+    image_name = "pan5.jpg"
     image_path = os.path.join(os.getcwd(), image_name)
     result = process_document(image_path)
     return jsonify(result)
