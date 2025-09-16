@@ -1,0 +1,34 @@
+{
+    "filename": "pan2.jpg",
+    "raw_detected_text": [
+        "<\ni ip SA par = AR UT\nINCOMETAK DEPARTMENT fe GOVT. OF INDIA\n- MITULKUMAR P PATEL ’\n‘ PUNJABHAL AMBALAL PATEL 3 na\n0a/10/1988 .\n’ pTyPPa201k a\nome",
+        ".\na",
+        "_\nx",
+        "w\nPs",
+        "..",
+        "a",
+        "-"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "<\ni ip SA par = AR UT\nINCOMETAK DEPARTMENT fe GOVT. OF INDIA\n- MITULKUMAR P PATEL ’\n‘ PUNJABHAL AMBALAL PATEL 3 na\n0a/10/1988 .\n’ pTyPPa201k a\nome",
+            ".\na",
+            "_\nx",
+            "w\nPs",
+            "..",
+            "a",
+            "-"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 92.3076923076923,
+        "Aadhaar Card": 68.42105263157895,
+        "Voter ID Card": 50.0,
+        "Passport": 58.82352941176471,
+        "Driving License": 60.0,
+        "Bank Passbook": 66.66666666666667
+    }
+}

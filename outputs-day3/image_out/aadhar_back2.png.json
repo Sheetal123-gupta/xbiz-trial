@@ -1,0 +1,30 @@
+{
+    "filename": "aadhar_back2.png",
+    "raw_detected_text": [
+        "al\nAN ear afore\n\n2 SO antag, aH 92 War shee, eerie te\n\n© ear - 335001 BS ABEe «\n\n3 S/o Rajeev Gupts, use no. 12, xumhar BRA CSRATIEES\n\n} monala, Gonganager, Ganganager, yes |\n\nRajasthan = 355001 EASA |\n\nAOU OW 1 1\n\nse b= Low Si",
+        "Jd",
+        "SRP etre rrfarnz er\n“GNQUETENTIFCATION RUTHER 6 mina",
+        "2 OO ante 2, FER Fleet,\n§ S/O ata TH, ESHA. 92, 5\n2 eee - 335001\n\n3 Address +\n\n3 5/0 Rajeev Gupta, house no. 12, kumhar\n= mohalla, Ganganagar, Ganganagar,\n\n4} Rajesthan = 335008",
+        "ae\nee!"
+    ],
+    "cleaned_summary": {
+        "Document": "Bank Passbook",
+        "Other Details": [
+            "al\nAN ear afore\n\n2 SO antag, aH 92 War shee, eerie te\n\n© ear - 335001 BS ABEe «\n\n3 S/o Rajeev Gupts, use no. 12, xumhar BRA CSRATIEES\n\n} monala, Gonganager, Ganganager, yes |\n\nRajasthan = 355001 EASA |\n\nAOU OW 1 1\n\nse b= Low Si",
+            "Jd",
+            "SRP etre rrfarnz er\n“GNQUETENTIFCATION RUTHER 6 mina",
+            "2 OO ante 2, FER Fleet,\n§ S/O ata TH, ESHA. 92, 5\n2 eee - 335001\n\n3 Address +\n\n3 5/0 Rajeev Gupta, house no. 12, kumhar\n= mohalla, Ganganagar, Ganganagar,\n\n4} Rajesthan = 335008",
+            "ae\nee!"
+        ]
+    },
+    "document_type": "Bank Passbook",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 53.84615384615385,
+        "Aadhaar Card": 57.14285714285714,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 50.0,
+        "Driving License": 60.0,
+        "Bank Passbook": 75.0
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "filename": "4ff8d83b-imgtopdf_generated_2508201303047_page-52_jpg.rf.1333f903fd25b580974b6e752d981622.jpg",
+    "raw_detected_text": [
+        "INCOME TAX DEPARTMENT = witty «\neo iE ya a Bel ' 4 ai =\nfrat a1 ATH / Father's Name Fearne se 3\n4 — . SSS\n\" 6 : SSS SSS SSS\nSS SS ee SSS SSS SSS\nSS SS SSS SSS SSS SSS SSS SS\n‘ SSS SSS SSS SRS\n“SER SS Se eS eS So SES SS SS SS\nSe SSSR, SSR SESS SS SASS\n. : RR Ss patton Sa SCS SLL SS SON he\n. SS eid steal een Rahat SS See ts Tas a ey SEs\n‘ : nha: Sa aa SR SSS SL RS SSG\nte SSS SSSR ESS Mons\nTe Way- aS Se ~ . SES FSS SUSSAS Sh SS\nREE CoS SERS SSS SS\nos"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "INCOME TAX DEPARTMENT = witty «\neo iE ya a Bel ' 4 ai =\nfrat a1 ATH / Father's Name Fearne se 3\n4 — . SSS\n\" 6 : SSS SSS SSS\nSS SS ee SSS SSS SSS\nSS SS SSS SSS SSS SSS SSS SS\n‘ SSS SSS SSS SRS\n“SER SS Se eS eS So SES SS SS SS\nSe SSSR, SSR SESS SS SASS\n. : RR Ss patton Sa SCS SLL SS SON he\n. SS eid steal een Rahat SS See ts Tas a ey SEs\n‘ : nha: Sa aa SR SSS SL RS SSG\nte SSS SSSR ESS Mons\nTe Way- aS Se ~ . SES FSS SUSSAS Sh SS\nREE CoS SERS SSS SS\nos"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 57.14285714285714,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 53.84615384615385,
+        "Driving License": 60.0,
+        "Bank Passbook": 57.14285714285714
+    }
+}

@@ -1,0 +1,44 @@
+{
+    "filename": "5a6dc3b4-589d7f31df0f3efd50f2e781_pan_jpg.rf.5c79bc7dcb859740fd7afd9d543c2855.jpg",
+    "raw_detected_text": [
+        "INCOMETAX DEPARTMENT => GOVT. OF INDI\nJAGDISH DAN CHARAN\nBHERU DAN\nress\n—_. < ES.\nSignature ee)",
+        "Ana",
+        "Uae",
+        "GOVT.",
+        "OF",
+        "INDIA",
+        "\"",
+        ": is Fa\nWeis?\nIe)",
+        "a",
+        "=",
+        "©\n=\n°\n8\nfo}\ns",
+        "Pa"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "INCOMETAX DEPARTMENT => GOVT. OF INDI\nJAGDISH DAN CHARAN\nBHERU DAN\nress\n—_. < ES.\nSignature ee)",
+            "Ana",
+            "Uae",
+            "GOVT.",
+            "OF",
+            "INDIA",
+            "\"",
+            ": is Fa\nWeis?\nIe)",
+            "a",
+            "=",
+            "©\n=\n°\n8\nfo}\ns",
+            "Pa"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 97.5609756097561,
+        "Aadhaar Card": 68.42105263157895,
+        "Voter ID Card": 57.14285714285714,
+        "Passport": 58.82352941176471,
+        "Driving License": 53.84615384615385,
+        "Bank Passbook": 66.66666666666667
+    }
+}

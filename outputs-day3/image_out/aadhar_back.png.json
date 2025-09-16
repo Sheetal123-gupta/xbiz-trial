@@ -1,0 +1,32 @@
+{
+    "filename": "aadhar_back.png",
+    "raw_detected_text": [
+        "Unique Identification Authority of India",
+        "Za",
+        "ia",
+        "Address:\n\n‘S10; Ramesh Chandra Sah, 46\nMathol, Badethi, Uttarkash,\n‘Dharashu, Uttarakhand, 249196",
+        "a ORT te Te, 46, Ath,\n196",
+        "8797 1708 2800\n= By om\nseer aia —."
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "Unique Identification Authority of India",
+            "Za",
+            "ia",
+            "Address:\n\n‘S10; Ramesh Chandra Sah, 46\nMathol, Badethi, Uttarkash,\n‘Dharashu, Uttarakhand, 249196",
+            "a ORT te Te, 46, Ath,\n196",
+            "8797 1708 2800\n= By om\nseer aia —."
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 76.92307692307692,
+        "Aadhaar Card": 63.1578947368421,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 64.70588235294117,
+        "Driving License": 46.15384615384615,
+        "Bank Passbook": 75.0
+    }
+}

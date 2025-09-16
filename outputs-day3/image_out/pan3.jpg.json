@@ -1,0 +1,22 @@
+{
+    "filename": "pan3.jpg",
+    "raw_detected_text": [
+        "PARR Permanent Account Number Card sequaapaeeeuanne\n\nATA / Name oa eG ie 1\nCHIRAG CHATTAR tienen\nfare a1 ara / Father's Name 3 5\nMUKESH CHATTAR rw 2 a\neH At areher/ Date of Birth Pe | aed > 8\n16/10/1997 Qraed ‘ ?\n\nERMA / Signature ;\na, : e\n“SEES SERS ALBERS CLES SS ttt\nBinesecin Ge one ces 3"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "PARR Permanent Account Number Card sequaapaeeeuanne\n\nATA / Name oa eG ie 1\nCHIRAG CHATTAR tienen\nfare a1 ara / Father's Name 3 5\nMUKESH CHATTAR rw 2 a\neH At areher/ Date of Birth Pe | aed > 8\n16/10/1997 Qraed ‘ ?\n\nERMA / Signature ;\na, : e\n“SEES SERS ALBERS CLES SS ttt\nBinesecin Ge one ces 3"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 100.0,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 78.57142857142857,
+        "Driving License": 69.23076923076923,
+        "Bank Passbook": 100.0
+    }
+}

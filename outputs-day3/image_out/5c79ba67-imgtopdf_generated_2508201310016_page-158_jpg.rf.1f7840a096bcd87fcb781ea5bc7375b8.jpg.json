@@ -1,0 +1,26 @@
+{
+    "filename": "5c79ba67-imgtopdf_generated_2508201310016_page-158_jpg.rf.1f7840a096bcd87fcb781ea5bc7375b8.jpg",
+    "raw_detected_text": [
+        "ed",
+        "—",
+        "o 7\n\n4p SPE Ras ae a FS\n\nNeen FORO PEERS Sy\n\neste ines oe a Ae\n\nst t 4\ni 4 . | ae ee ei . a\n\n—<= —— -\n—= SS.\n\n————\n~~ = ———S\n\n. =.\n\n: >_>, —\n—- ——— _\n= =) = 3\n——S=—S=——\n—— _—_ =\n\n——————\n\n>... — =\n—S . =\n? —— — ae\n= |"
+    ],
+    "cleaned_summary": {
+        "Document": "Voter ID Card",
+        "Other Details": [
+            "ed",
+            "—",
+            "o 7\n\n4p SPE Ras ae a FS\n\nNeen FORO PEERS Sy\n\neste ines oe a Ae\n\nst t 4\ni 4 . | ae ee ei . a\n\n—<= —— -\n—= SS.\n\n————\n~~ = ———S\n\n. =.\n\n: >_>, —\n—- ——— _\n= =) = 3\n——S=—S=——\n—— _—_ =\n\n——————\n\n>... — =\n—S . =\n? —— — ae\n= |"
+        ]
+    },
+    "document_type": "Voter ID Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 47.61904761904761,
+        "Aadhaar Card": 50.0,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 50.0,
+        "Driving License": 60.0,
+        "Bank Passbook": 50.0
+    }
+}

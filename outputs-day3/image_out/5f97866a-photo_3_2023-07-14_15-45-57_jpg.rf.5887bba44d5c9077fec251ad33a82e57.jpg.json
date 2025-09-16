@@ -1,0 +1,62 @@
+{
+    "filename": "5f97866a-photo_3_2023-07-14_15-45-57_jpg.rf.5887bba44d5c9077fec251ad33a82e57.jpg",
+    "raw_detected_text": [
+        "|",
+        "a",
+        "a",
+        "Series: Th - =\nsre ax fart gy AIA BSR\nINCOMETAX DEPARTMENT > GOVT.OF INDIA\nUDAY KUMAR SARMA\nPUTUL SARMA\n2enanes2\nPermanent Account Number\nCTSPS9741M “A\nwe tte\n\n= os",
+        "feaant",
+        "wey",
+        "ara",
+        "CAT! BE",
+        "INDIA",
+        "GOVT. OF",
+        "INCOME TAX DEPARTMENT",
+        "YDAY KUMAR SARMA",
+        "PUTUL SARMA",
+        "26/10/1982",
+        "as\nPermanent Account Number",
+        "“4",
+        "CTSPS9741M",
+        "ab Kt Sa",
+        "i",
+        "he",
+        "Signature"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "|",
+            "a",
+            "a",
+            "Series: Th - =\nsre ax fart gy AIA BSR\nINCOMETAX DEPARTMENT > GOVT.OF INDIA\nUDAY KUMAR SARMA\nPUTUL SARMA\n2enanes2\nPermanent Account Number\nCTSPS9741M “A\nwe tte\n\n= os",
+            "feaant",
+            "wey",
+            "ara",
+            "CAT! BE",
+            "INDIA",
+            "GOVT. OF",
+            "INCOME TAX DEPARTMENT",
+            "YDAY KUMAR SARMA",
+            "PUTUL SARMA",
+            "26/10/1982",
+            "as\nPermanent Account Number",
+            "“4",
+            "CTSPS9741M",
+            "ab Kt Sa",
+            "i",
+            "he",
+            "Signature"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 63.1578947368421,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 57.14285714285714,
+        "Driving License": 60.0,
+        "Bank Passbook": 100.0
+    }
+}

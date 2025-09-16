@@ -1,0 +1,22 @@
+{
+    "filename": "4aaed8f9-imgtopdf_generated_2508201303047_page-154_jpg.rf.b6f1b8f9741ed6550e538b27f7bdd43e.jpg",
+    "raw_detected_text": [
+        "Lia.\" Tha...\na Permanent Account Number Card hee 4 BOA A Jt?\nee CAVPJ9110K Sone eet\n| eek aee\noP ATE fame OWS dae ter eed\nFrat @) 4Te / Father's Name\n02/03/2000 i = . Are | Signature"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "Lia.\" Tha...\na Permanent Account Number Card hee 4 BOA A Jt?\nee CAVPJ9110K Sone eet\n| eek aee\noP ATE fame OWS dae ter eed\nFrat @) 4Te / Father's Name\n02/03/2000 i = . Are | Signature"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 52.63157894736843,
+        "Voter ID Card": 64.28571428571428,
+        "Passport": 53.84615384615385,
+        "Driving License": 53.84615384615385,
+        "Bank Passbook": 100.0
+    }
+}

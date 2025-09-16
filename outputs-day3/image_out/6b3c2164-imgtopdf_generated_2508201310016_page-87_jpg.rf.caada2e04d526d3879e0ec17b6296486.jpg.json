@@ -1,0 +1,26 @@
+{
+    "filename": "6b3c2164-imgtopdf_generated_2508201310016_page-87_jpg.rf.caada2e04d526d3879e0ec17b6296486.jpg",
+    "raw_detected_text": [
+        "._v ,) ™ «¢ * itl 5\n: ~_\nwv\" ‘ S m ‘\\ ~ ae a » : - 4 4\noe a? r% Sit aay\nSireresx fearst ana i\n| _ INCOME TAX DEPARTMENT GOVT. OF INDIA - ‘\nPermanent Account Number Card Ot Ue Theo ea ak Rica / a <*\nwe Fin de de, te! ‘ yay Ps val\n- / Name Sop Hin it aerial roy et r at\nEUAN . i we ra iv Fe a a oad 5 :",
+        "9S",
+        "r"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "._v ,) ™ «¢ * itl 5\n: ~_\nwv\" ‘ S m ‘\\ ~ ae a » : - 4 4\noe a? r% Sit aay\nSireresx fearst ana i\n| _ INCOME TAX DEPARTMENT GOVT. OF INDIA - ‘\nPermanent Account Number Card Ot Ue Theo ea ak Rica / a <*\nwe Fin de de, te! ‘ yay Ps val\n- / Name Sop Hin it aerial roy et r at\nEUAN . i we ra iv Fe a a oad 5 :",
+            "9S",
+            "r"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 68.42105263157895,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 52.94117647058824,
+        "Driving License": 66.66666666666667,
+        "Bank Passbook": 100.0
+    }
+}

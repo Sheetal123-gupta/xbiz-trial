@@ -1,0 +1,38 @@
+{
+    "filename": "an_voter.jpg",
+    "raw_detected_text": [
+        "&",
+        "g",
+        "Election Commission of India\nara Prater rir",
+        "?",
+        "Father's Name: Rajesh Kumar",
+        "RPI Gitider: JON / Mabe\n[55 HR / 00822-08199\nIY / Age:",
+        "electors Photo Ideotity Cand - 5-40 SOE TH",
+        "Js",
+        "."
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "&",
+            "g",
+            "Election Commission of India\nara Prater rir",
+            "?",
+            "Father's Name: Rajesh Kumar",
+            "RPI Gitider: JON / Mabe\n[55 HR / 00822-08199\nIY / Age:",
+            "electors Photo Ideotity Cand - 5-40 SOE TH",
+            "Js",
+            "."
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 63.1578947368421,
+        "Voter ID Card": 100.0,
+        "Passport": 58.82352941176471,
+        "Driving License": 66.66666666666667,
+        "Bank Passbook": 54.54545454545454
+    }
+}
