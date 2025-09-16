@@ -1,0 +1,32 @@
+{
+    "filename": "blur_pan.jpg",
+    "raw_detected_text": [
+        "OME TAX DEPARTMENT GOVT. OF\nauveorices |",
+        "a os",
+        "n",
+        "ea",
+        "i."
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Name": null,
+        "Father’s Name": null,
+        "DOB": null,
+        "Number": null,
+        "Issuing Authority": null,
+        "Other Details": [
+            "OME TAX DEPARTMENT GOVT. OF\nauveorices |",
+            "a os"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 92.3076923076923,
+        "Aadhaar Card": 50.0,
+        "Voter ID Card": 50.0,
+        "Passport": 50.0,
+        "Driving License": 50.0,
+        "Bank Passbook": 53.333333333333336
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "filename": "4aaed8f9-imgtopdf_generated_2508201303047_page-154_jpg.rf.b6f1b8f9741ed6550e538b27f7bdd43e.jpg",
+    "raw_detected_text": [
+        "is\" The. 5 |\n= Permanent Account Number Cand, Sisters eS ee Pal mee\n: / CAVPJ91140K ee eG\n—- wile er ae ae ees\n| aT | Mame ry “i Sr\nFrar © aTe / Father's Name\n“a Wit rire lathe oI, we :"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Name": null,
+        "Father's Name": "",
+        "DOB": null,
+        "Number": null,
+        "Issuing Authority": null,
+        "Other Details": [
+            "is\" The. 5 |\n= Permanent Account Number Cand, Sisters eS ee Pal mee\n: / CAVPJ91140K ee eG\n—- wile er ae ae ees\n| aT | Mame ry “i Sr\nFrar © aTe / Father's Name\n“a Wit rire lathe oI, we :"
+        ]
+    },
+    "document_type": "PAN Card",
+    "document_side": "Front"
+}

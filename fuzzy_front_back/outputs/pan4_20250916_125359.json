@@ -1,0 +1,35 @@
+{
+    "filename": "pan4.jpg",
+    "raw_detected_text": [
+        "fy SSS i\n\nb Tae fart Q Water is\n= _ ee = i\n\nss COMETAK DEPARTMENT > GOWIVOPUNDIA, ~////\n\n4) SSS KUNAL KUMAR see\n\nS. Pe Permiginent Account Number E WEP\n\n— . ~ Fas Ay\n\n= 4a . 9 ee\nLQ ES Ss. J i",
+        "=",
+        "Zz",
+        "-",
+        ".",
+        "™~",
+        "~~",
+        "xX",
+        "~~"
+    ],
+    "cleaned_summary": {
+        "Document": "Bank Passbook",
+        "Name": null,
+        "Father’s Name": null,
+        "DOB": null,
+        "Number": null,
+        "Issuing Authority": null,
+        "Other Details": [
+            "fy SSS i\n\nb Tae fart Q Water is\n= _ ee = i\n\nss COMETAK DEPARTMENT > GOWIVOPUNDIA, ~////\n\n4) SSS KUNAL KUMAR see\n\nS. Pe Permiginent Account Number E WEP\n\n— . ~ Fas Ay\n\n= 4a . 9 ee\nLQ ES Ss. J i"
+        ]
+    },
+    "document_type": "Bank Passbook",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 87.5,
+        "Aadhaar Card": 60.0,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 53.84615384615385,
+        "Driving License": 53.84615384615385,
+        "Bank Passbook": 100.0
+    }
+}

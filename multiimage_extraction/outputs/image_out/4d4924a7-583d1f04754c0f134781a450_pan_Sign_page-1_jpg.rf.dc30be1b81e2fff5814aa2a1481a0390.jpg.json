@@ -1,0 +1,36 @@
+{
+    "filename": "4d4924a7-583d1f04754c0f134781a450_pan_Sign_page-1_jpg.rf.dc30be1b81e2fff5814aa2a1481a0390.jpg",
+    "raw_detected_text": [
+        "YASH PATEL ey\n\nASHWANI KUMAR PATEL py /\n\nPee aces laced\n\naziPPO74sE\n\nae Be ae i",
+        "Signature Not\nVerified\n\nSign ols\nPATEL\n\nDate : Wed @c 0\n12:55:12 1S/2016",
+        "ae",
+        "07",
+        "Date",
+        "Reason : Ugstox\nAccount pd ing\nLocation: Mumbai",
+        "Reason",
+        "Account"
+    ],
+    "cleaned_summary": {
+        "Document": "Voter ID Card",
+        "Other Details": [
+            "YASH PATEL ey\n\nASHWANI KUMAR PATEL py /\n\nPee aces laced\n\naziPPO74sE\n\nae Be ae i",
+            "Signature Not\nVerified\n\nSign ols\nPATEL\n\nDate : Wed @c 0\n12:55:12 1S/2016",
+            "ae",
+            "07",
+            "Date",
+            "Reason : Ugstox\nAccount pd ing\nLocation: Mumbai",
+            "Reason",
+            "Account"
+        ]
+    },
+    "document_type": "Voter ID Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 59.45945945945945,
+        "Aadhaar Card": 60.0,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 53.84615384615385,
+        "Driving License": 60.0,
+        "Bank Passbook": 66.66666666666667
+    }
+}

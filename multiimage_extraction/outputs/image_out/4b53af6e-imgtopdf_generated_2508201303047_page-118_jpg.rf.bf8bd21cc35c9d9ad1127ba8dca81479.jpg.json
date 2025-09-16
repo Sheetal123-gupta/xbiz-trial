@@ -1,0 +1,22 @@
+{
+    "filename": "4b53af6e-imgtopdf_generated_2508201303047_page-118_jpg.rf.bf8bd21cc35c9d9ad1127ba8dca81479.jpg",
+    "raw_detected_text": [
+        "INCOME TAX DEPARTMENT 2 © GOVT.OFINDIA\nBacker, Permanent Account Number Card |\nbeara: AQWPH6848P\n| GANENDRA HALDER\nfaat 1 aT! Father's Name\nNAREN HALDER ee\n01/01/1 . a : Feat / Signature = Ey"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Other Details": [
+            "INCOME TAX DEPARTMENT 2 © GOVT.OFINDIA\nBacker, Permanent Account Number Card |\nbeara: AQWPH6848P\n| GANENDRA HALDER\nfaat 1 aT! Father's Name\nNAREN HALDER ee\n01/01/1 . a : Feat / Signature = Ey"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 66.66666666666667,
+        "Voter ID Card": 64.28571428571428,
+        "Passport": 58.33333333333333,
+        "Driving License": 52.17391304347826,
+        "Bank Passbook": 100.0
+    }
+}

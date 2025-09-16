@@ -1,0 +1,32 @@
+{
+    "filename": "aadhar_s.png",
+    "raw_detected_text": [
+        "q",
+        "rr ag Rea Tere\n[Name : Shah Riya Gopaldas\norsr fa: 21/04/2003\neAi/Female",
+        "4545 6372 4999",
+        "Aer siren, A Wea"
+    ],
+    "cleaned_summary": {
+        "Document": "Bank Passbook",
+        "Name": "21/04/2003\neAi/Female",
+        "Father’s Name": null,
+        "DOB": "21/04/2003",
+        "Number": "4545 6372 4999",
+        "Issuing Authority": null,
+        "Other Details": [
+            "rr ag Rea Tere\n[Name : Shah Riya Gopaldas\norsr fa: 21/04/2003\neAi/Female",
+            "4545 6372 4999",
+            "Aer siren, A Wea"
+        ]
+    },
+    "document_type": "Bank Passbook",
+    "side": "Unknown",
+    "fuzzy_scores": {
+        "PAN Card": 61.53846153846154,
+        "Aadhaar Card": 50.0,
+        "Voter ID Card": 50.0,
+        "Passport": 50.0,
+        "Driving License": 44.44444444444444,
+        "Bank Passbook": 66.66666666666667
+    }
+}

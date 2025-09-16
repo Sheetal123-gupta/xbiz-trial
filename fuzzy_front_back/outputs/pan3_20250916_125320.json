@@ -1,0 +1,27 @@
+{
+    "filename": "pan3.jpg",
+    "raw_detected_text": [
+        "| INCOMETAXDEPARTMENT _ GOVT. OF INDIA\nBena Permanent Account Number Card  #Ssegnaapaeeeuama\nRs eerie BJUPC0498Q Ses |\nBaas BS VSS .\naa / Name Pee |) ian\nCHIRAG CHATTAR ae\nfare a1 ara / Father's Name 3 5\nMUKESH CHATTAR a ge I:\nWH At ANPa/ Date of Birth rt &\") = |\n16/10/1997 Owes ‘ ?\nETAT / Signature S\nBe ree"
+    ],
+    "cleaned_summary": {
+        "Document": "PAN Card",
+        "Name": null,
+        "Father’s Name": "WH At ANPa/ Date of Birth rt &\") = |\n16/10/1997 Owes ‘ ?\nETAT / Signature S\nBe ree",
+        "DOB": "16/10/1997",
+        "Number": null,
+        "Issuing Authority": null,
+        "Other Details": [
+            "| INCOMETAXDEPARTMENT _ GOVT. OF INDIA\nBena Permanent Account Number Card  #Ssegnaapaeeeuama\nRs eerie BJUPC0498Q Ses |\nBaas BS VSS .\naa / Name Pee |) ian\nCHIRAG CHATTAR ae\nfare a1 ara / Father's Name 3 5\nMUKESH CHATTAR a ge I:\nWH At ANPa/ Date of Birth rt &\") = |\n16/10/1997 Owes ‘ ?\nETAT / Signature S\nBe ree"
+        ]
+    },
+    "document_type": "PAN Card",
+    "side": "Front",
+    "fuzzy_scores": {
+        "PAN Card": 100.0,
+        "Aadhaar Card": 100.0,
+        "Voter ID Card": 66.66666666666667,
+        "Passport": 78.57142857142857,
+        "Driving License": 69.23076923076923,
+        "Bank Passbook": 100.0
+    }
+}
