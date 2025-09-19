@@ -6,7 +6,9 @@ import re
 import json
 import os
 import uuid
+import base64
 from werkzeug.utils import secure_filename
+from rapidfuzz import fuzz  # ✅ Added RapidFuzz
 
 app = Flask(__name__)
 
@@ -25,126 +27,108 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+# -----------------------------
+# Document classification keywords
+# -----------------------------
+DOCUMENT_KEYWORDS = {
+    "Driving License": ["DL NO", "DRIVING LICENCE", "AUTHORISATION TO DRIVE", "MCWG", "TRANSPORT", "RTO", "VALID TILL"],
+    "Aadhaar Card": ["AADHAAR", "UNIQUE IDENTIFICATION AUTHORITY", "VID", "GOVERNMENT OF INDIA", "UIDAI"],
+    "PAN Card": ["INCOME TAX DEPARTMENT", "PERMANENT ACCOUNT NUMBER", "INCOME TAX"],
+    "Bank Passbook": ["BANK OF", "ACCOUNT NO", "IFSC", "PASSBOOK", "BRANCH"],
+    "Voter ID Card": ["ELECTION COMMISSION OF INDIA", "VOTER ID", "EPIC NO","ELECTION","ELECTORAL REGISTRATION OFFICER"],
+    "Passport": ["REPUBLIC OF INDIA", "PASSPORT", "TYPE", "CODE", "DATE OF ISSUE"]
+}
+
+# -----------------------------
 # OCR & Document Processing Logic
+# -----------------------------
 def process_document(image_path):
     image = cv2.imread(image_path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     dilated = cv2.dilate(thresh, kernel, iterations=2)
+
     contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[1])
 
-    # Document detection flags
-    is_pan = False
-    is_aadhar = False
-    is_bank_passbook = False
-    is_driving_license = False
-    is_voter_id = False
-    is_passport_id = False
-
-    # Regex patterns
-    pan_pattern = re.compile(r"^[A-Z]{5}[0-9]{4}[A-Z]$")
-    aadhar_pattern = re.compile(r"^\d{4}\s\d{4}\s\d{4}$")
-    aadhar_pattern_nospace = re.compile(r"^\d{12}$")
-    dl_number_pattern = re.compile(r"^[A-Z]{2}\d{2}[0-9A-Z]{11,}$")
-
-    # Keywords for document type
-    bank_keywords = ["IFSC", "CIF", "ACCOUNT", "A/C", "SAVING", "SB A/C", "CURRENT","BRANCH CODE","BRANCH"]
-    dl_keywords = ["DRIVING LICENCE", "DRIVING LICENSE", "DL NO", "VALID TILL", "DATE OF ISSUE", "DOB", "AUTHORISATION TO DRIVE"]
-    voter_keywords = ["ELECTION COMMISSION OF INDIA", "VOTER ID", "ELECTOR'S PHOTO IDENTITY CARD"]
-    passport_keywords = ["REPUBLIC OF INDIA", "PASSPORT", "TYPE", "CODE", "DATE OF ISSUE", "DATE OF EXPIRY"]
-
-    # Side detection keywords
-    aadhaar_front_keywords = ["GOVERNMENT OF INDIA", "AADHAAR", "UIDAI"]
-    aadhaar_back_keywords = ["VID", "ENROLMENT", "HELPLINE", "WWW.UIDAI.GOV.IN", "ADDRESS"]
-
-    pan_front_keywords = ["INCOME TAX DEPARTMENT", "PERMANENT ACCOUNT NUMBER"]
-    pan_back_keywords = ["INCOME TAX PAN SERVICES UNIT", "CBD BELAPUR", "NSDL", "UTIITSL"]
-
-    dl_front_keywords = ["DRIVING LICENCE", "DL NO", "VALID TILL"]
-    dl_back_keywords = ["AUTHORISED TO DRIVE", "COV", "TRANSPORT", "NON-TRANSPORT"]
-
-    voter_front_keywords = ["ELECTION","ELECTION COMMISSION OF INDIA", "PHOTO IDENTITY CARD"]
-    voter_back_keywords = ["ADDRESS", "EPIC NO"]
-
-    passport_front_keywords = ["REPUBLIC OF INDIA", "PASSPORT", "TYPE", "CODE"]
-    passport_back_keywords = ["PARENTS NAME", "ADDRESS", "PLACE OF ISSUE"]
-
     extracted_blocks = []
-
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
         roi = image[y:y+h, x:x+w]
         text = pytesseract.image_to_string(roi, config="--psm 6").strip()
-        text_clean = text.upper().replace(" ", "")
-        extracted_blocks.append(text)
+        if text:
+            extracted_blocks.append(text)
+            # Draw rectangle
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            # Draw text above rectangle
+            text_to_display = text.replace('\n', ' ')
+            font_scale = 0.5
+            thickness = 1
+            text_size, _ = cv2.getTextSize(text_to_display, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
+            text_x = x
+            text_y = y - 5 if y - 5 > 10 else y + h + 15
+            cv2.putText(image, text_to_display, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
+                        font_scale, (0, 0, 255), thickness, cv2.LINE_AA)
 
-        # Document detection
-        if "PERMANENTACCOUNTNUMBER" in text_clean or "INCOMETAXDEPARTMENT" in text_clean or "INCOMETAXPAN" in text_clean or pan_pattern.match(text_clean):
-            is_pan = True
-        if aadhar_pattern.match(text.strip()) or aadhar_pattern_nospace.match(text.strip()) or "GOVERNMENTOFINDIA" in text_clean or "UNIQUEIDENTIFICATIONAUTHORITYOFINDIA" in text_clean:
-            is_aadhar = True
-        for keyword in bank_keywords:
-            if keyword in text.upper():
-                is_bank_passbook = True
-        for keyword in dl_keywords:
-            if keyword in text.upper() or dl_number_pattern.match(text_clean):
-                is_driving_license = True
-        for keyword in voter_keywords:
-            if keyword in text.upper():
-                is_voter_id = True
-        for keyword in passport_keywords:
-            if keyword in text.upper():
-                is_passport_id = True
+    full_text = " ".join(extracted_blocks).upper()
 
-    # Determine document type
-    doc_type = "Unknown Document"
-    if is_pan:
-        doc_type = "PAN Card"
-    elif is_aadhar:
-        doc_type = "Aadhaar Card"
-    elif is_bank_passbook:
-        doc_type = "Bank Passbook"
-    elif is_driving_license:
-        doc_type = "Driving License"
-    elif is_voter_id:
-        doc_type = "Voter ID Card"
-    elif is_passport_id:
-        doc_type = "Passport"
+    # -----------------------------
+    # Document classification using RapidFuzz
+    # -----------------------------
+    best_match = ("Unknown Document", 0)
+    for doc_type, keywords in DOCUMENT_KEYWORDS.items():
+        score = 0
+        for kw in keywords:
+            ratio = fuzz.partial_ratio(kw, full_text)
+            if ratio > 80:
+                score += ratio
+        if score > best_match[1]:
+            best_match = (doc_type, score)
+    doc_type = best_match[0]
 
-    # Determine document side
+    # -----------------------------
+    # Side detection logic
+    # -----------------------------
     doc_side = "Unknown Side"
     blocks_upper = [b.upper() for b in extracted_blocks]
 
-    if is_aadhar:
-        if any(any(k in b for k in aadhaar_front_keywords) for b in blocks_upper):
+    if doc_type == "Aadhaar Card":
+        if any(fuzz.partial_ratio(k, b) > 80 for k in ["GOVERNMENT OF INDIA", "AADHAAR"] for b in blocks_upper):
             doc_side = "Front"
-        elif any(any(k in b for k in aadhaar_back_keywords) for b in blocks_upper):
+        elif any(fuzz.partial_ratio(k, b) > 80 for k in ["VID", "ENROLMENT", "ADDRESS"] for b in blocks_upper):
             doc_side = "Back"
-    elif is_pan:
-        if any(any(k in b for k in pan_front_keywords) for b in blocks_upper):
+    elif doc_type == "PAN Card":
+        if any(fuzz.partial_ratio(k, b) > 80 for k in ["INCOME TAX DEPARTMENT", "PERMANENT ACCOUNT NUMBER"] for b in blocks_upper):
             doc_side = "Front"
-        elif any(any(k in b for k in pan_back_keywords) for b in blocks_upper):
-            doc_side = "Back"
-    elif is_driving_license:
-        if any(any(k in b for k in dl_front_keywords) for b in blocks_upper):
-            doc_side = "Front"
-        elif any(any(k in b for k in dl_back_keywords) for b in blocks_upper):
-            doc_side = "Back"
-    elif is_voter_id:
-        if any(any(k in b for k in voter_front_keywords) for b in blocks_upper):
-            doc_side = "Front"
-        elif any(any(k in b for k in voter_back_keywords) for b in blocks_upper):
-            doc_side = "Back"
-    elif is_passport_id:
-        if any(any(k in b for k in passport_front_keywords) for b in blocks_upper):
-            doc_side = "Front"
-        elif any(any(k in b for k in passport_back_keywords) for b in blocks_upper):
+        elif any(fuzz.partial_ratio(k, b) > 80 for k in ["PAN SERVICES UNIT", "NSDL", "UTIITSL"] for b in blocks_upper):
             doc_side = "Back"
 
+    elif doc_type == "Voter ID Card":
+        if any(fuzz.partial_ratio(k, b) > 70 for k in ["ELECTION COMMISSION OF INDIA",
+            "VOTER ID",
+            "EPIC NO",
+            "PHOTO",
+            "GENDER",
+            "FATHER"] for b in blocks_upper):
+            doc_side = "Front"
+        elif any(fuzz.partial_ratio(k, b) > 60 for k in ["ELECTORAL REGISTRATION OFFICER",
+            "CONSTITUENCY",
+            "FACSIMILE SIGNATURE",
+            "ADDRESS"] for b in blocks_upper):
+            doc_side = "Back" 
+
+
+    elif doc_type == "Driving License":
+        if any(fuzz.partial_ratio(k, b) > 80 for k in ["DRIVING LICENCE", "DL NO"] for b in blocks_upper):
+            doc_side = "Front"
+        elif any(fuzz.partial_ratio(k, b) > 80 for k in ["AUTHORISATION TO DRIVE", "COV", "TRANSPORT"] for b in blocks_upper):
+            doc_side = "Back"
+
+    # -----------------------------
     # Cleaned Summary Function
+    # -----------------------------
     def generate_cleaned_summary(blocks, doc_type):
         summary = {
             "Document": doc_type,
@@ -158,9 +142,9 @@ def process_document(image_path):
 
         for text in blocks:
             clean_text = text.strip()
-            if "ELECTION COMMISSION OF INDIA" in clean_text.upper():
+            if fuzz.partial_ratio("ELECTION COMMISSION OF INDIA", clean_text.upper()) > 85:
                 summary["Issuing Authority"] = "Election Commission of India"
-            if "GOVERNMENT OF INDIA" in clean_text.upper():
+            if fuzz.partial_ratio("GOVERNMENT OF INDIA", clean_text.upper()) > 85:
                 summary["Issuing Authority"] = "Government of India"
             if "NAME" in clean_text.upper() and "FATHER" not in clean_text.upper():
                 summary["Name"] = clean_text.split(":")[-1].strip()
@@ -185,12 +169,21 @@ def process_document(image_path):
     unique_id = str(uuid.uuid4())[:8]
     base_name = os.path.splitext(os.path.basename(image_path))[0]
 
+    # Save result image to file
+    result_image_path = os.path.join(app.config['OUTPUT_FOLDER'], f"{base_name}_{unique_id}_output.jpg")
+    cv2.imwrite(result_image_path, image)
+
+    # ✅ Convert processed image to base64
+    _, buffer = cv2.imencode('.jpg', image)
+    img_base64 = base64.b64encode(buffer).decode('utf-8')
+
     output_data = {
         "filename": os.path.basename(image_path),
         "raw_detected_text": extracted_blocks,
         "cleaned_summary": summary,
         "document_type": doc_type,
-        "document_side": doc_side  # ✅ Added side info
+        "document_side": doc_side,
+        "processed_img_base64":img_base64
     }
 
     # Save output JSON
@@ -202,9 +195,7 @@ def process_document(image_path):
     result_image_path = os.path.join(app.config['OUTPUT_FOLDER'], f"{base_name}_{unique_id}_output.jpg")
     cv2.imwrite(result_image_path, image)
 
-    # Add the processed image filename to the response
     output_data['processed_image'] = f"{base_name}_{unique_id}_output.jpg"
-
     return output_data
 
 @app.route('/')

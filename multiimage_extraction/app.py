@@ -159,5 +159,12 @@ def process_all_files():
     }
     return jsonify({"summary": summary, "results": results})
 
+@app.route('/count' ,methods=['GET'])
+def count_images():
+    folder="images1"
+    count=len(os.listdir(folder))
+    return jsonify({"image count :": count})
+
+
 if __name__ == "__main__":
     app.run(debug=True)
