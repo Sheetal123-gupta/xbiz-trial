@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 # Load OCR JSON
-with open("ocr_response.json", "r", encoding="utf-8") as f:
+with open("til_aadhar.json", "r", encoding="utf-8") as f:
     data = json.load(f)
     
 paragraphs = []
