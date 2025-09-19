@@ -1,17 +1,4 @@
-'''
-Curl Request
-curl --location 'https://bankdevapi.digivision.ai/digivision/ai/rawtext-extraction' \
---header 'Content-Type: application/json' \
---data '{
-    "txnId": "TXN0000001",
-    "docType": ".JPG",
-    "source": "OCR_RAW",
-    "documentName": "14.JPG",
-    "caseNo": "case001",
-    "documentBlob": "--iske undar apna base64 ka wo dalna he"
-}
-'''
-#OCR JSON processing & visualization 
+#------------------------------according to task it is completed -------------------------
 
 import json
 import cv2
@@ -26,32 +13,21 @@ words = []
 lines = []
 
 # Traverse OCR response
-for page_idx, page in enumerate(data["results"][0]["Data"]["responses"][0]["fullTextAnnotation"]["pages"]):
-    for block_idx, block in enumerate(page["blocks"]):
-        for para_idx, para in enumerate(block["paragraphs"]):
+for page in data["results"][0]["Data"]["responses"][0]["fullTextAnnotation"]["pages"]:
+    for block in page["blocks"]:
+        for para in block["paragraphs"]:
             # Collect paragraph text
             para_text = ""
             for word in para["words"]:
                 word_text = "".join([s["text"] for s in word["symbols"]])
-                
-                # Get word bounding box coordinates
-                bbox = word["boundingBox"]["vertices"]
-                bbox_coords = [{"x": v.get("x", 0), "y": v.get("y", 0)} for v in bbox]
-                
-                words.append({
-                    "text": word_text,
-                    "confidence": word.get("confidence", 0),
-                    "bounding_box": bbox_coords
-                    
-                })
-                
+                words.append({"text": word_text, "confidence": word["confidence"]})
                 para_text += word_text + " "
             para_text = para_text.strip()
             paragraphs.append(para_text)
 
             # Add line with bounding box Y for sorting
-            y_coord = para["boundingBox"]["vertices"][0].get("y", 0)
-            x_coord = para["boundingBox"]["vertices"][0].get("x", 0)
+            y_coord = para["boundingBox"]["vertices"][0]["y"]
+            x_coord = para["boundingBox"]["vertices"][0]["x"]
             lines.append({
                 "text": para_text,
                 "y": y_coord,
@@ -63,16 +39,16 @@ for page_idx, page in enumerate(data["results"][0]["Data"]["responses"][0]["full
 sorted_lines = sorted(lines, key=lambda x: (x["y"], x["x"]))
 
 # Save JSON files
-with open("1paragraphs.json", "w", encoding="utf-8") as f:
+with open("paragraphs.json", "w", encoding="utf-8") as f:
     json.dump(paragraphs, f, ensure_ascii=False, indent=4)
 
-with open("1words.json", "w", encoding="utf-8") as f:
+with open("words.json", "w", encoding="utf-8") as f:
     json.dump(words, f, ensure_ascii=False, indent=4)
 
-with open("1text.json", "w", encoding="utf-8") as f:
+with open("text.json", "w", encoding="utf-8") as f:
     json.dump("\n".join(paragraphs), f, ensure_ascii=False, indent=4)
 
-with open("1sorted_text.json", "w", encoding="utf-8") as f:
+with open("sorted_text.json", "w", encoding="utf-8") as f:
     json.dump([line["text"] for line in sorted_lines], f, ensure_ascii=False, indent=4)
 
 print("✅ JSON files created: paragraphs.json, words.json, text.json, sorted_text.json")
@@ -86,18 +62,18 @@ if img is None:
 
 for line in sorted_lines:
     # Get bounding box
-    pts = [(v.get("x", 0), v.get("y", 0)) for v in line["bbox"]]
+    pts = [(v["x"], v["y"]) for v in line["bbox"]]
     pts = [(int(x), int(y)) for x, y in pts]
 
     # Draw contour
     cv2.polylines(img, [cv2.convexHull(np.array(pts))], True, (0, 255, 0), 2)
 
-    # Put text above the box (small font to avoid overlap)
+    # Put text above the box
     x, y = pts[0]
     cv2.putText(img, line["text"], (x, y - 5),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1, cv2.LINE_AA)
+                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv2.LINE_AA)
 
 # Save final output
 output_path = "output.jpg"
 cv2.imwrite(output_path, img)
-print(f"Output saved as {output_path}")
+print(f"✅ Output saved as {output_path}")
