@@ -1,3 +1,6 @@
+from flask import Flask, request, jsonify
+import os
+import uuid
 import cv2
 import numpy as np
 import pytesseract
@@ -6,9 +9,12 @@ import re
 from rapidfuzz import fuzz
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-import os
 
-# Optional: specify Tesseract path (Windows only) pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# Setup Flask app
+app = Flask(__name__)
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # --- Document Type Keywords ---
 DOC_KEYWORDS = {
@@ -22,14 +28,13 @@ DOC_KEYWORDS = {
 FUZZY_THRESHOLD = 55
 MIN_KEYWORD_MATCHES = 2
 
-# --- Detect and correct major rotation (90, 180, 270) ---
+# --- Correct rotation ---
 def correct_rotation(image):
     rotation_applied = False
     try:
         osd = pytesseract.image_to_osd(image)
         angle = int(re.search(r"Rotate: (\d+)", osd).group(1))
         if angle != 0:
-            print(f"Correcting rotation: {angle} degrees")
             rotation_applied = True
             if angle == 90:
                 image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
@@ -37,11 +42,11 @@ def correct_rotation(image):
                 image = cv2.rotate(image, cv2.ROTATE_180)
             elif angle == 270:
                 image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    except Exception as e:
-        print(f"[WARN] Rotation detection failed: {e}")
+    except Exception:
+        pass
     return image, rotation_applied
 
-# --- Deskew (small tilt) ---
+# --- Correct skew ---
 def correct_skew(image):
     skew_applied = False
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -64,14 +69,13 @@ def correct_skew(image):
         if angles:
             median_angle = np.median(angles)
             if abs(median_angle) > 0.5:
-                print(f"[INFO] Rotating to fix arbitrary skew: {median_angle:.2f} degrees")
                 skew_applied = True
                 (h, w) = image.shape[:2]
                 M = cv2.getRotationMatrix2D((w // 2, h // 2), median_angle, 1.0)
                 image = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
     return image, skew_applied
 
-# --- Additional preprocessing to enhance OCR accuracy ---
+# --- OCR preparation ---
 def prepare_image_for_ocr(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     filtered = cv2.bilateralFilter(gray, 9, 75, 75)
@@ -84,101 +88,43 @@ def prepare_image_for_ocr(image):
     cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
     return cleaned
 
-# --- Preprocessing pipeline ---
+# --- Preprocess ---
 def preprocess_image(image_path):
     img = cv2.imread(image_path)
     if img is None:
         raise ValueError("Image not found.")
+    img, _ = correct_rotation(img)
+    img, _ = correct_skew(img)
+    return img
 
-    original_img = img.copy()
-    img, rotation_applied = correct_rotation(img)
-    img, skew_applied = correct_skew(img)
-
-    corrections_applied = rotation_applied or skew_applied
-    base_name = os.path.splitext(image_path)[0]
-    comparison_path = None
-
-    if corrections_applied:
-        corrected_path = base_name + "_corrected.jpg"
-        cv2.imwrite(corrected_path, img)
-        print(f"✅ Corrected image saved to: {corrected_path}")
-        comparison_path = base_name + "_comparison.jpg"
-        create_comparison_image(original_img, img, comparison_path)
-    else:
-        print("[INFO] No corrections needed - image was already properly oriented")
-    return img, comparison_path
-
-
-# --- Create side-by-side comparison ---
-def create_comparison_image(original, corrected, output_path):
-    h1, w1 = original.shape[:2]
-    h2, w2 = corrected.shape[:2]
-    target_height = min(h1, h2, 800)
-
-    scale1 = target_height / h1
-    new_w1 = int(w1 * scale1)
-    original_resized = cv2.resize(original, (new_w1, target_height))
-
-    scale2 = target_height / h2
-    new_w2 = int(w2 * scale2)
-    corrected_resized = cv2.resize(corrected, (new_w2, target_height))
-
-    total_width = new_w1 + new_w2 + 10
-    comparison = np.ones((target_height, total_width, 3), dtype=np.uint8) * 255
-
-    comparison[:, :new_w1] = original_resized
-    comparison[:, new_w1 + 10:] = corrected_resized
-
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(comparison, "ORIGINAL", (10, 30), font, 1, (0, 0, 255), 2)
-    cv2.putText(comparison, "CORRECTED", (new_w1 + 20, 30), font, 1, (0, 255, 0), 2)
-
-    cv2.imwrite(output_path, comparison)
-    print(f"📊 Comparison image saved to: {output_path}")
-
-# --- OCR with line-by-line group ---
+# --- OCR extraction ---
 def extract_text_and_boxes(image):
     ocr_ready = prepare_image_for_ocr(image)
-
     data = pytesseract.image_to_data(
         ocr_ready,
         output_type=Output.DICT,
         lang="eng",
-        config='--oem 3 --psm 6'
+        config="--oem 3 --psm 6"
     )
-
     boxes = []
     lines = {}
-
     for i in range(len(data["text"])):
         word = data["text"][i].strip()
         if not word or not word.isascii():
             continue
-
-        block = data["block_num"][i]
-        par = data["par_num"][i]
-        line = data["line_num"][i]
+        block, par, line = data["block_num"][i], data["par_num"][i], data["line_num"][i]
         key = (block, par, line)
-
-        if key not in lines:
-            lines[key] = []
-        lines[key].append(word)
-
+        lines.setdefault(key, []).append(word)
         x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
         boxes.append({
             "text": word,
-            "x_min": x,
-            "y_min": y,
-            "x_max": x + w,
-            "y_max": y + h
+            "x_min": x, "y_min": y,
+            "x_max": x + w, "y_max": y + h
         })
-
-    full_text_lines = [' '.join(lines[key]) for key in sorted(lines.keys())]
-    full_text = "\n".join(full_text_lines)
-
+    full_text = "\n".join([" ".join(lines[k]) for k in sorted(lines.keys())])
     return full_text, boxes
 
-# --- Document Type Detection ---
+# --- Document type detection ---
 def detect_document_type(text):
     text = text.lower()
     scores = {}
@@ -194,77 +140,72 @@ def detect_document_type(text):
     best_match = max(scores, key=scores.get)
     return best_match if scores[best_match] >= MIN_KEYWORD_MATCHES else "Unknown"
 
-# --- Draw contours only ---
-def draw_contours_only(image, output_path):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    contour_image = image.copy()
-    cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 2)
-    cv2.imwrite(output_path, contour_image)
-    print(f"📌 Contour-only image saved to: {output_path}")
-
 # --- Draw boxes ---
 def draw_boxes(image, boxes, output_path):
     img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     h, w, _ = img_rgb.shape
     fig, ax = plt.subplots(figsize=(w / 100, h / 100), dpi=100)
     ax.imshow(img_rgb)
-
     for idx, b in enumerate(boxes, start=1):
-        x_min, y_min = b["x_min"], b["y_min"]
-        x_max, y_max = b["x_max"], b["y_max"]
-        box_w = x_max - x_min
-        box_h = y_max - y_min
-
-        # Green rectangle around the text
-        rect = Rectangle((x_min, y_min), box_w, box_h,
+        rect = Rectangle((b["x_min"], b["y_min"]),
+                         b["x_max"] - b["x_min"],
+                         b["y_max"] - b["y_min"],
                          linewidth=1.5, edgecolor="lime", facecolor="none")
         ax.add_patch(rect)
-
-        # Draw text label (yellow) above the box
-        ax.text(x_min, y_min - 5, f"{idx}. {b['text']}", fontsize=6, color="yellow",
-                bbox=dict(facecolor="black", alpha=0.4, pad=1), verticalalignment="bottom")
-
+        ax.text(b["x_min"], b["y_min"] - 5, f"{idx}. {b['text']}",
+                fontsize=6, color="yellow",
+                bbox=dict(facecolor="black", alpha=0.4, pad=1),
+                verticalalignment="bottom")
     ax.axis("off")
     plt.tight_layout(pad=0)
     plt.savefig(output_path, bbox_inches="tight", pad_inches=0, dpi=300)
     plt.close()
-    print(f"✅ Annotated image saved to: {output_path}")
 
+# --- Document processor ---
 def process_document(image_path):
-    print(f"🔄 Processing: {image_path}")
-    image, comparison_path = preprocess_image(image_path)
+    image = preprocess_image(image_path)
     text, boxes = extract_text_and_boxes(image)
     doc_type = detect_document_type(text)
 
-    annotated_path = os.path.splitext(image_path)[0] + "_annotated.png"
-    draw_boxes(image, boxes, annotated_path)
+    base = os.path.splitext(os.path.basename(image_path))[0]
 
-    # Save extracted text to a .txt file
-    text_path = os.path.splitext(image_path)[0] + "_extracted.txt"
-    with open(text_path, "w", encoding="utf-8") as f:
-        f.write(text)
-    print(f"💾 Extracted text saved to: {text_path}")
-    print(f"📄 Document Type: {doc_type}")
-    print(f"🖼️ Annotated Image saved to: {annotated_path}")
+    # Save annotated image
+    annotated_path = f"{base}_annotated.png"
+    annotated_full = os.path.join(UPLOAD_FOLDER, annotated_path)
+    draw_boxes(image, boxes, annotated_full)
 
-    if comparison_path:
-        print(f"🔄 Comparison Image saved to: {comparison_path}")
+    # Save extracted text
+    text_filename = f"{base}_extracted.txt"
+    text_fullpath = os.path.join(UPLOAD_FOLDER, text_filename)
+    with open(text_fullpath, "w", encoding="utf-8") as f:
+        f.write(f"Document Type: {doc_type}\n\n{text}")
 
     return {
         "document_type": doc_type,
-        "text": text,
-        "annotated_image": annotated_path,
-        "text_file": text_path,
-        "comparison_image": comparison_path
+        "extracted_text": text,
+        "annotated_image": annotated_full,
+        "text_file": text_fullpath
     }
+
+# --- API Route ---
+@app.route("/extract", methods=["POST"])
+def extract_api():
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files["file"]
+    if not file:
+        return jsonify({"error": "Empty file"}), 400
+
+    filename = f"{uuid.uuid4().hex}_{file.filename}"
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(filepath)
+
+    try:
+        result = process_document(filepath)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # --- Run ---
 if __name__ == "__main__":
-    image_path = "images/aadhar_dhapu.png"  # Change to your test image
-    result = process_document(image_path)
-
-
+    app.run(debug=True)

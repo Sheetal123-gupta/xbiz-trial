@@ -1,3 +1,6 @@
+from flask import Flask, request, render_template, redirect, url_for
+import os
+import uuid
 import cv2
 import numpy as np
 import pytesseract
@@ -6,10 +9,23 @@ import re
 from rapidfuzz import fuzz
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-import os
 
-# Optional: specify Tesseract path (Windows only) pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# Setup Flask app
+app = Flask(__name__)
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+# --------- [ KEEP YOUR FULL OCR FUNCTIONS HERE ] ---------
+# Copy all your existing functions here:
+# - correct_rotation()
+# - correct_skew()
+# - prepare_image_for_ocr()
+# - preprocess_image()
+# - extract_text_and_boxes()
+# - detect_document_type()
+# - create_comparison_image()
+# - draw_boxes()
 # --- Document Type Keywords ---
 DOC_KEYWORDS = {
     "PAN Card": ["income tax department", "permanent account number", "आयकर विभाग", "भारत सरकार"],
@@ -233,38 +249,48 @@ def draw_boxes(image, boxes, output_path):
     plt.savefig(output_path, bbox_inches="tight", pad_inches=0, dpi=300)
     plt.close()
     print(f"✅ Annotated image saved to: {output_path}")
-
+# --- Add the wrapper to process uploaded file ---
 def process_document(image_path):
-    print(f"🔄 Processing: {image_path}")
     image, comparison_path = preprocess_image(image_path)
     text, boxes = extract_text_and_boxes(image)
     doc_type = detect_document_type(text)
 
-    annotated_path = os.path.splitext(image_path)[0] + "_annotated.png"
-    draw_boxes(image, boxes, annotated_path)
+    base = os.path.splitext(os.path.basename(image_path))[0]
+    annotated_path = f"{base}_annotated.png"
+    annotated_full = os.path.join(UPLOAD_FOLDER, annotated_path)
+    draw_boxes(image, boxes, annotated_full)
 
-    # Save extracted text to a .txt file
-    text_path = os.path.splitext(image_path)[0] + "_extracted.txt"
-    with open(text_path, "w", encoding="utf-8") as f:
+    # --- Save extracted text to .txt file ---
+    text_filename = f"{base}_extracted.txt"
+    text_fullpath = os.path.join(UPLOAD_FOLDER, text_filename)
+    with open(text_fullpath, "w", encoding="utf-8") as f:
+        f.write(f"Document Type: {doc_type}\n\n")
         f.write(text)
-    print(f"💾 Extracted text saved to: {text_path}")
-    print(f"📄 Document Type: {doc_type}")
-    print(f"🖼️ Annotated Image saved to: {annotated_path}")
 
-    if comparison_path:
-        print(f"🔄 Comparison Image saved to: {comparison_path}")
+    print(f"📝 Extracted text saved to: {text_fullpath}")
+
 
     return {
         "document_type": doc_type,
         "text": text,
         "annotated_image": annotated_path,
-        "text_file": text_path,
-        "comparison_image": comparison_path
+        "comparison_image": os.path.basename(comparison_path) if comparison_path else None,
+        "text_file":text_filename
     }
+
+# --- Routes ---
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        file = request.files["file"]
+        if file:
+            filename = f"{uuid.uuid4().hex}_{file.filename}"
+            filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(filepath)
+            result = process_document(filepath)
+            return render_template("index.html", result=result)
+    return render_template("index.html", result=None)
 
 # --- Run ---
 if __name__ == "__main__":
-    image_path = "images/aadhar_dhapu.png"  # Change to your test image
-    result = process_document(image_path)
-
-
+    app.run(debug=True)  
