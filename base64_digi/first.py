@@ -54,7 +54,7 @@ with open("sorted_text.json", "w", encoding="utf-8") as f:
 print("✅ JSON files created: paragraphs.json, words.json, text.json, sorted_text.json")
 
 # Draw text & contours on image
-image_path = "image.png"  # input image
+image_path = "images/image.png"  # input image
 img = cv2.imread(image_path)
 
 if img is None:

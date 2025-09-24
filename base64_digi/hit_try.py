@@ -1,5 +1,4 @@
 '''
-
 #Reads OCR JSON output.
 #Extracting Text Paragraphs.
 #Storing Text with Coordinates
@@ -53,7 +52,6 @@ with open("aligned_layout.txt", "w", encoding="utf-8") as f:
 print("✅ Layout-style text saved to aligned_layout.txt\n")
 print("\n".join(aligned_output))
 '''
-
 import cv2
 import base64
 import json
@@ -311,7 +309,7 @@ def main(image_path=IMAGE_PATH):
     plot_layout(sorted_paras, image_size_hint=image_size_hint, output_image=OUTPUT_IMAGE)
 
     #mene jo contour  par text dala 
-    plot_contours_on_image("aadhar_dhapu.png", sorted_paras, "contour_img2.png")
+    plot_contours_on_image("images/aadhar_dhapu.png", sorted_paras, "contour_img2.png")
 
 if __name__ == "__main__":
     main()

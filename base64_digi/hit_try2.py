@@ -26,7 +26,6 @@ def image_to_base64(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
-
 def call_api_with_base64(b64str, documentName=DOCUMENT_NAME, txnId=TXN_ID):
     payload = {
         "txnId": txnId,
@@ -41,14 +40,12 @@ def call_api_with_base64(b64str, documentName=DOCUMENT_NAME, txnId=TXN_ID):
     resp.raise_for_status()
     return resp.json()
 
-
 def safe_get_vertex_top_left(bbox_vertices):
     xs = [v.get("x", 0) for v in bbox_vertices if isinstance(v, dict)]
     ys = [v.get("y", 0) for v in bbox_vertices if isinstance(v, dict)]
     if not xs: xs = [0]
     if not ys: ys = [0]
     return min(xs), min(ys), max(xs), max(ys)
-
 
 def extract_paragraphs_from_response(resp_json):
     out = []
@@ -74,7 +71,6 @@ def extract_paragraphs_from_response(resp_json):
                 para_text_parts = []
                 para_bbox = para.get("boundingBox", {}).get("vertices", [])
                 word_xs, word_ys = [], []
-
                 for w in words:
                     syms = w.get("symbols", [])
                     wtext = "".join([s.get("text", "") for s in syms])
@@ -89,7 +85,6 @@ def extract_paragraphs_from_response(resp_json):
                 para_text = " ".join(para_text_parts).strip()
                 if not para_text:
                     continue
-
                 if para_bbox:
                     x_min, y_min, x_max, y_max = safe_get_vertex_top_left(para_bbox)
                 else:
@@ -110,10 +105,8 @@ def extract_paragraphs_from_response(resp_json):
                 })
     return out
 
-
 def detect_document_type_from_text(text):
     text_lower = text.lower()
-
     docs = {
         "PAN Card": ["income tax department", "permanent account number","आयकर विभाग",
                      "भारत सरकार","सत्यमेव जयते"],
@@ -147,7 +140,6 @@ def detect_document_type_from_text(text):
     if scores[detected_type] < 2:
         return "Unknown"
     return detected_type
-
 
 def console_layout_output(sorted_paras, out_path=OUTPUT_TEXT, scale=CONSOLE_SCALE):
     canvas = {}
@@ -196,7 +188,6 @@ def plot_contours_on_image(image_path, sorted_paras, output_image="contour_img.p
     plt.close(fig)
     print(f"✅ Contours with text drawn on original image -> {output_image}")
 
-
 def plot_layout(sorted_paras, image_size_hint=None, output_image=OUTPUT_IMAGE):
     page_w, page_h = None, None
     for p in sorted_paras:
@@ -238,7 +229,6 @@ def plot_layout(sorted_paras, image_size_hint=None, output_image=OUTPUT_IMAGE):
     plt.close(fig)
     print(f"✅ Saved plotted layout with block IDs + text at position -> {output_image}")
 
-
 def main(image_path=IMAGE_PATH):
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Image not found: {image_path}")
@@ -254,28 +244,25 @@ def main(image_path=IMAGE_PATH):
         return
 
     sorted_paras = sorted(paras, key=lambda p: (p["y_min"], p["x_min"]))
-
-    # ✅ Combine all texts for detection
+    # Combine all texts for detection
     full_text = "\n".join([p["text"] for p in sorted_paras])
     
-    # 🔍 Optional debug
+    #Optional debug
     print("\n🔍 OCR Extracted Text:\n", full_text)
 
-    # ✅ Detect document type
+    #Detect document type
     doc_type = detect_document_type_from_text(full_text)
     print(f"\n📄 Detected Document Type: {doc_type}")
 
-    # ✅ Print lines with coordinates
+    #Print lines with coordinates
     print("\n---- Extracted lines with coordinates (top-left) ----\n")
     for p in sorted_paras:
         print(f"(x={p['x_min']}, y={p['y_min']})  -> {p['text']}")
 
-    # ✅ Plot layout
+    #Plot layout
     with Image.open(image_path) as im:
         image_size_hint = im.size
     plot_layout(sorted_paras, image_size_hint=image_size_hint, output_image=OUTPUT_IMAGE)
     plot_contours_on_image(image_path, sorted_paras, "contour_img2.png")
-
-
 if __name__ == "__main__":
     main()

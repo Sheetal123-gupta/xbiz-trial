@@ -294,3 +294,9 @@ def index():
 # --- Run ---
 if __name__ == "__main__":
     app.run(debug=True)  
+
+    #asset- image jo user base64 convertion
+    #request- 1.request jo request hit kar raha he 2.response jo output hoiga
+    #output- text file(sirf ocr) jo output basically apna text and annotated images print ke jjagah logger save ito text file 
+    #thinkng logging ? 
+    
