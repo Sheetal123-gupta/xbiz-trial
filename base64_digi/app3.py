@@ -5,12 +5,31 @@ from rapidfuzz import fuzz
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from datetime import datetime
+from pdf2image import convert_from_path
+import getpass
+from flask_httpauth import HTTPBasicAuth
 
 # Setup Flask app
 app = Flask(__name__)
 BASE_FOLDER = "transactions"
 os.makedirs(BASE_FOLDER, exist_ok=True)
+auth=HTTPBasicAuth()
+USERNAME="sheetal"
+PASSWORD="9681"
 
+@auth.verify_password
+def verify(username,password):
+    if username==USERNAME and password==PASSWORD:
+        return USERNAME
+    return None
+'''USERNAME="sheetal"
+PASSWORD="9681"
+input_username=input("USERNAME : -")
+input_password=getpass.getpass("PASSWORD")
+if input_username!=USERNAME or input_password!=PASSWORD:
+    print("galat mat daal bro")
+    exit(1)
+'''
 # --- Document Type Keywords ---
 DOC_KEYWORDS = {
     "PAN Card": ["income tax department", "permanent account number", "आयकर विभाग", "भारत सरकार"],
@@ -142,6 +161,37 @@ def process_document(file_path, txn_id):
         img = correct_rotation(img)
         img = correct_skew(img)
 
+        # Preprocess
+
+        # Save corrected image
+        corrected_path = os.path.join(txn_folder, "outputs", "annotated", f"{filename}_corrected.png")
+        cv2.imwrite(corrected_path, img)
+
+        # Save comparison (original vs corrected)
+        comparison_path = os.path.join(txn_folder, "outputs", "annotated", f"{filename}_comparison.png")
+        h1, w1 = img.shape[:2]
+        h2, w2 = img.shape[:2]
+        target_height = min(h1, h2, 800)
+
+        # Resize both images
+        scale1 = target_height / h1
+        orig_resized = cv2.resize(img, (int(w1 * scale1), target_height))
+        scale2 = target_height / h2
+        corr_resized = cv2.resize(img, (int(w2 * scale2), target_height))
+
+        total_width = orig_resized.shape[1] + corr_resized.shape[1] + 10
+        comparison = np.ones((target_height, total_width, 3), dtype=np.uint8) * 255
+        comparison[:, :orig_resized.shape[1]] = orig_resized
+        comparison[:, orig_resized.shape[1] + 10:] = corr_resized
+
+        cv2.putText(comparison, "ORIGINAL", (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(comparison, "CORRECTED", (orig_resized.shape[1] + 20, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+        cv2.imwrite(comparison_path, comparison)
+
+
         # OCR
         text, boxes = extract_text_and_boxes(img)
         doc_type = detect_document_type(text)
@@ -180,11 +230,14 @@ def process_document(file_path, txn_id):
                 "annotated_image": annotated_path, "text_file": text_path}
 
     except Exception as e:
-        log_error(os.path.dirname(file_path), str(e))
+        #log_error(os.path.dirname(file_path), str(e))
+        os.makedirs(os.path.dirname(err_file), exist_ok=True)
+
         return {"error": str(e)}
 
 # --- Routes ---
 @app.route("/", methods=["GET", "POST"])
+@auth.login_required
 def index():
     if request.method == "POST":
         file = request.files["file"]
@@ -197,5 +250,42 @@ def index():
             return render_template("index.html", result=result)
     return render_template("index.html", result=None)
 
+@app.route("/pdf")
+@auth.login_required
+def pdf():
+    return render_template("pdf.html")
+
+
+@app.route("/process_pdf", methods=["POST"])
+@auth.login_required
+def process_pdf():
+    file = request.files.get("pdf")
+    if not file:
+        return "No PDF uploaded", 400
+
+    filename = f"{uuid.uuid4().hex}_{file.filename}"
+    temp_pdf_path = os.path.join(BASE_FOLDER, filename)
+    file.save(temp_pdf_path)
+    txn_id = f"TXN{uuid.uuid4().hex[:6]}"
+
+    # Convert PDF pages to images
+    pages = convert_from_path(temp_pdf_path)
+    results = []
+
+    for page_num, page_image in enumerate(pages, start=1):
+        # Save page temporarily as image
+        temp_img_path = os.path.join(BASE_FOLDER, f"{txn_id}_page{page_num}.png")
+        page_image.save(temp_img_path, "PNG")
+
+        # Reuse your existing process_document pipeline
+        result = process_document(temp_img_path, f"{txn_id}_page{page_num}")
+        result["page_num"] = page_num
+        results.append(result)
+
+    return render_template("pdf.html", results=results)
+
 if __name__ == "__main__":
+    '''for file in os.listdir(config.BASE_FOLDER):
+        if file.lower().endswith((".jpg",".png")):
+            process_document(file)'''
     app.run(debug=True)

@@ -1,3 +1,4 @@
+#supporting with rotation
 from flask import Flask, request, render_template, redirect, url_for
 import os
 import uuid
@@ -9,13 +10,20 @@ import re
 from rapidfuzz import fuzz
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
+import getpass
 
 # Setup Flask app
 app = Flask(__name__)
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
+USERNAME="admin"
+PASSWORD="12345"
+input_name=input("enter the username :- ")
+input_password=getpass.getpass("Enter the password : -")
+if input_name!=USERNAME or input_password!=PASSWORD:
+    print("dhang se sahi se daal ")
+    exit(1)
 # --------- [ KEEP YOUR FULL OCR FUNCTIONS HERE ] ---------
 # Copy all your existing functions here:
 # - correct_rotation()
