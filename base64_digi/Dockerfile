@@ -25,9 +25,8 @@ COPY . .
 # Expose Flask port
 EXPOSE 5000
 
-# Set Flask environment variables
-ENV FLASK_APP=app2.py
-ENV FLASK_RUN_HOST=0.0.0.0
+# Default Flask app (can be overridden at runtime)
+# Default app file
+ENV APP_FILE=app2.py
 
-# Run the app
-CMD ["flask", "run"]
+CMD ["sh", "-c", "python $APP_FILE"]
