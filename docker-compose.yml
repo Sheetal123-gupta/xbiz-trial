@@ -1,0 +1,72 @@
+services:
+  base64_digi:
+    build: ./base64_digi
+    container_name: base64_digi
+    ports:
+      - "5001:5000"
+
+  Detection_motion:
+    build: ./Detection_motion
+    container_name: detection_motion
+    ports:
+      - "5003:5000"
+
+  document_side_detection:
+    build: ./document_side_detection
+    container_name: document_side_detection
+    ports:
+      - "5004:5000"
+
+  document_type_detection:
+    build: ./document_type_detection
+    container_name: document_type_detection
+    ports:
+      - "5005:5000"
+
+  flask_ui:
+    build: ./flask_ui
+    container_name: flask_ui
+    ports:
+      - "5006:5000"
+
+  folderWise_withDigi:
+    build: ./folderWise_withDigi
+    container_name: folderwise_withdigi
+    ports:
+      - "5007:5000"
+
+  fuzzy_front_back:
+    build: ./fuzzy_front_back
+    container_name: fuzzy_front_back
+    ports:
+      - "5008:5000"
+
+  multiimage_extraction:
+    build: ./multiimage_extraction
+    container_name: multiimage_extraction
+    ports:
+      - "5009:5000"
+
+  object_detection:
+    build: ./object_detection
+    container_name: object_detection
+    ports:
+      - "5010:5000"
+
+  ocr_accuracy:
+    build: ./ocr_accuracy
+    container_name: ocr_accuracy
+    ports:
+      - "5011:5000"
+
+  ocr_implementation:
+    build: ./ocr_implementation
+    container_name: ocr_implementation
+    ports:
+      - "5012:5000"
+
+  pdf_secure:
+    build: ./pdf_secure
+    container_name: pdf_secure
+    ports:
+      - "5013:5000"

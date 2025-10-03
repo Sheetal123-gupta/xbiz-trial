@@ -29,4 +29,5 @@ EXPOSE 5000
 # Default app file
 ENV APP_FILE=app2.py
 
-CMD ["sh", "-c", "python $APP_FILE"]
+
+CMD ["python","app2.py"]

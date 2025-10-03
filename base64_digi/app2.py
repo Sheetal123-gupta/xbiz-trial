@@ -17,13 +17,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "static/uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-USERNAME="admin"
-PASSWORD="12345"
-input_name=input("enter the username :- ")
-input_password=getpass.getpass("Enter the password : -")
-if input_name!=USERNAME or input_password!=PASSWORD:
-    print("dhang se sahi se daal ")
-    exit(1)
+
 # --------- [ KEEP YOUR FULL OCR FUNCTIONS HERE ] ---------
 # Copy all your existing functions here:
 # - correct_rotation()
@@ -301,7 +295,7 @@ def index():
 
 # --- Run ---
 if __name__ == "__main__":
-    app.run(debug=True)  
+    app.run(debug=True, host="0.0.0.0",port=5000)  
 
     #asset- image jo user base64 convertion
     #request- 1.request jo request hit kar raha he 2.response jo output hoiga
