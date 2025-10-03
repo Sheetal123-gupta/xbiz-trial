@@ -5,7 +5,6 @@ video = cv2.VideoCapture(0)
 facedetect = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
-
 while True:
     ret, frame = video.read()
     if not ret:

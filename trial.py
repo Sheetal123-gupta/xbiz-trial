@@ -1,31 +1,34 @@
 import cv2
-import pytesseract
-#reading of image
-img=cv2.imread("pan5.jpg")
+from PIL import Image
+from pytesseract import pytesseract
 
-#convert into grascale
-gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-print(gray)
-print(f"---------------------------------------------")
-gray=cv2.bilateralFilter(gray,9,75,75)
-print(gray)
-print("=============================")
-gray=cv2.GaussianBlur(gray,(5,5),0)
-print(gray)
-thresh=cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,31,15)
-print(thresh)
+# Paths
+path_to_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+image_path = r"C:\Users\ASUS\Music\xbiz-trial\flask_ui\uploads\pooja_driv.jpg"
 
-edges=cv2.Canny(thresh,50,150)
-print(edges)
+# Provide tesseract path
+pytesseract.tesseract_cmd = path_to_tesseract
 
-contours,_=cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-print(contours)
+# Load image with OpenCV
+img_cv = cv2.imread(image_path)
 
-for i in contours:
-  x,y,w,h=cv2.boundingRect(i)
-  cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-print(i)
+# Convert to grayscale
+gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
 
-text=pytesseract.image_to_string(thresh)
-print(text)
+# Resize (improves small text detection)
+gray = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
 
+# Noise removal
+gray = cv2.medianBlur(gray, 3)
+
+# Thresholding
+thresh = cv2.adaptiveThreshold(
+    gray, 255,
+    cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+    cv2.THRESH_BINARY, 31, 2
+)
+
+# OCR
+text = pytesseract.image_to_string(thresh, lang="eng+hin")
+
+print(text.strip())
