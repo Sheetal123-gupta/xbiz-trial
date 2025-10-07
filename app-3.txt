@@ -45,3 +45,14 @@ and manually image name le rahe he wo current working directory lega so output j
 fir jo process_document function he usko call karega and json me output dega
 
 fir flask development server on karne ke liye {[debug=true means auto reloading],[and if agar mujhe port number change karna he to port=8080]}
+
+
+---- docker hub ke images vs docker desktop ka images -----------------
+just check what is this (docker run -it node /bin/bash)
+touch dockerfile
+=========== dockerfile ka format==========
+(install the baseimage ka version) From python:latest
+(COPY source destination) COPY . . (matlab isi file se isi file ke app ke image me dalna)
+(Run jo aapka language me code he) RUN npm install
+(write or expose port number) EXPOSE 5500
+(CMD language and entry_file name) CMD ["python","app.py"]

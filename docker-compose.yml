@@ -5,8 +5,8 @@ services:
     ports:
       - "5001:5000"
 
-  Detection_motion:
-    build: ./Detection_motion
+  detection_motion:
+    build: ./detection_motion
     container_name: detection_motion
     ports:
       - "5003:5000"
@@ -29,7 +29,7 @@ services:
     ports:
       - "5006:5000"
 
-  folderWise_withDigi:
+  folderwise_withdigi:
     build: ./folderWise_withDigi
     container_name: folderwise_withdigi
     ports:
