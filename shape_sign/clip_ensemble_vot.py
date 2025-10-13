@@ -1,17 +1,27 @@
-#clip works on semantic similarity between the image and text prompts 
 import os
+import csv
 import torch
 import clip
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 from collections import Counter
 
-# === CONFIG ===
+# === CONFIG (GPU/CPU selection) ===
 device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
+
+# === MODEL LOAD ===
 model, preprocess = clip.load("ViT-B/32", device=device)
 
+# === PATHS ===
 image_folder = r"C:\Users\ASUS\Downloads\Sign_samples_all"
-output_folder = r"C:\Users\ASUS\Downloads\CLIP_Labeled_Output3"
+output_folder = r"C:\Users\ASUS\Downloads\CLIP_Labeled_Output4"
+csv_path = os.path.join(output_folder, "output.csv")
+
 os.makedirs(output_folder, exist_ok=True)
+
+# === RESET CSV IF EXISTS ===
+if os.path.exists(csv_path):
+    os.remove(csv_path)
 
 # === FONT ===
 try:
@@ -19,7 +29,7 @@ try:
 except:
     font = ImageFont.load_default()
 
-# === PROMPT GROUPS (well-separated) ===
+# === PROMPT GROUPS ===
 prompt_groups = {
     "signature_on_paper": [
         "a handwritten signature on white paper",
@@ -28,13 +38,12 @@ prompt_groups = {
     "shape_on_device": [
         "a geometric shape on a mobile screen",
         "a digital shape on a tablet"
-        
     ],
     "shape_on_paper": [
         "a shape drawn on paper"
     ],
-    "signature_on_device":[
-        "Signed on paper"
+    "signature_on_device": [
+        "a digital signature on a mobile device"
     ],
     "noisy_data": [
         "a blurry or corrupted image",
@@ -43,7 +52,7 @@ prompt_groups = {
     ]
 }
 
-# === ENCODE PROMPT ENSEMBLES ===
+# === ENCODE TEXT PROMPTS ===
 class_labels = []
 text_features = []
 
@@ -58,53 +67,74 @@ for label, variants in prompt_groups.items():
 
 text_features = torch.cat(text_features, dim=0)
 
-# === LOOP THROUGH IMAGES ===
-print(" Starting classification...")
+# === LOG FUNCTION ===
+def log_result(csv_path, filename, label, confidence=None, status="success", remark=""):
+    write_header = not os.path.exists(csv_path)
+    try:
+        with open(csv_path, "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if write_header:
+                writer.writerow(["filename", "label", "confidence", "status", "remark"])
+            formatted_confidence = f"{confidence:.2f}" if confidence is not None else ""
+            writer.writerow([filename, label, formatted_confidence, status, remark])
+    except PermissionError:
+        print(f" Permission denied: Close {csv_path} if open in Excel.")
 
-for root, dirs, files in os.walk(image_folder):
+# === PROCESS IMAGES ===
+print("Starting classification...")
+
+valid_exts = ('.png', '.jpg', '.jpeg', '.jfif', '.bmp', '.webp', '.tiff')
+
+for root, _, files in os.walk(image_folder):
     for filename in files:
-        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            img_path = os.path.join(root, filename)
+        if not filename.lower().endswith(valid_exts):
+            continue
 
-            try:
-                image = Image.open(img_path).convert("RGB")
-                image = ImageEnhance.Contrast(image).enhance(1.5)
+        img_path = os.path.join(root, filename)
+        try:
+            image = Image.open(img_path).convert("RGB")
+        except Exception as e:
+            log_result(csv_path, filename, "Unreadable", None, "failed", str(e))
+            continue
 
-                votes = []
-                confidences = []
+        try:
+            image = ImageEnhance.Contrast(image).enhance(1.5)
 
-                # === MULTIPLE RUNS (ensemble voting) ===
-                for _ in range(3):  # run 3 times
-                    image_tensor = preprocess(image).unsqueeze(0).to(device)
+            votes = []
+            confidences = []
 
-                    with torch.no_grad():
-                        image_features = model.encode_image(image_tensor)
-                        image_features /= image_features.norm(dim=-1, keepdim=True)
-                        similarity = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+            for _ in range(3):  # ensemble runs
+                image_tensor = preprocess(image).unsqueeze(0).to(device)
+                with torch.no_grad():
+                    image_features = model.encode_image(image_tensor)
+                    image_features /= image_features.norm(dim=-1, keepdim=True)
+                    similarity = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                    best_idx = similarity.argmax().item()
+                    votes.append(class_labels[best_idx])
+                    confidences.append(similarity[0][best_idx].item())
 
-                        best_idx = similarity.argmax().item()
-                        votes.append(class_labels[best_idx])
-                        confidences.append(similarity[0][best_idx].item())
+            vote_counts = Counter(votes)
+            final_label, _ = vote_counts.most_common(1)[0]
+            avg_conf = sum(confidences) / len(confidences)
 
-                # === VOTING + THRESHOLDING ===
-                vote_counts = Counter(votes)
-                final_label, vote_freq = vote_counts.most_common(1)[0]
-                avg_conf = sum(confidences) / len(confidences)
+            THRESHOLD = 0.45
+            label_to_draw = final_label if avg_conf >= THRESHOLD else "Unknown"
 
-                THRESHOLD = 0.45
-                label_to_draw = final_label if avg_conf >= THRESHOLD else "Unknown"
+            # Draw label
+            draw = ImageDraw.Draw(image)
+            label_text = f"{label_to_draw} ({avg_conf*100:.1f}%)"
+            draw.rectangle([0, 0, image.width, 40], fill=(0, 0, 0))
+            draw.text((10, 5), label_text, fill=(255, 255, 255), font=font)
 
-                # === DRAW LABEL ===
-                draw = ImageDraw.Draw(image)
-                label_text = f"{label_to_draw} ({avg_conf*100:.1f}%)"
-                draw.rectangle([0, 0, image.width, 40], fill=(0, 0, 0))
-                draw.text((10, 5), label_text, fill=(255, 255, 255), font=font)
+            # Save labeled image
+            save_path = os.path.join(output_folder, filename)
+            image.save(save_path)
 
-                # === SAVE IMAGE ===
-                save_path = os.path.join(output_folder, filename)
-                image.save(save_path)
+            # Log result
+            log_result(csv_path, filename, label_to_draw, avg_conf)
 
-            except Exception as e:
-                print(f"⚠️ Error processing {filename}: {e}")
+        except Exception as e:
+            log_result(csv_path, filename, "Error", None, "failed", str(e))
 
-print(f"\n All labeled images saved in: {output_folder}")
+print(f"\n All images processed. Labeled images saved in: {output_folder}")
+print(f" CSV log saved at: {csv_path}")
