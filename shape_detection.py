@@ -1,4 +1,14 @@
 
+import os
+path="C:\\Users\\ASUS\\Downloads\\shapes\\signature"
+count=0
+all_files=os.listdir(path)
+ext=('.png','.jpg','.jpeg','.bmp')
+for ans in all_files:
+  if ans.lower().endswith(ext):
+    count=count+1
+print(count)
+
 
 #-------------------------------------------- lets see ------------------------ 
 # ✅ 1️⃣ IMPORTS

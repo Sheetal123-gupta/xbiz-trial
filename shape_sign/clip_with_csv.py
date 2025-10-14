@@ -203,5 +203,5 @@ with open(csv_path, "w", newline="", encoding="utf-8") as f:
             except Exception as e:
                 log_result(writer, filename, "Error", None, f"failed: {e}")
 
-print(f"\n✅ All labeled images saved in: {output_folder}")
-print(f"✅ CSV log saved at: {csv_path}")
+print(f"\n All labeled images saved in: {output_folder}")
+print(f" CSV log saved at: {csv_path}")

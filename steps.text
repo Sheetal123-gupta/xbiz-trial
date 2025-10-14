@@ -1,0 +1,36 @@
+==========================  13/10/25 ==============================
+Import libraries for image processing, CLIP, and file handling.
+Select device (cuda if GPU available, else cpu).
+Load CLIP model (ViT-B/32) and preprocessing pipeline.
+Set input/output paths and create output folder if missing.
+Reset CSV log file if it already exists.
+Load font for image annotation (fallback to default if missing).
+Define prompt groups for each semantic class.
+Tokenize and encode prompts into normalized text embeddings.
+Store averaged embeddings and corresponding class labels.
+Define label prefixes for renaming output files.
+Initialize counters to track how many images per class.
+Open CSV file and write header row.
+Loop through all valid image files in the input folder.
+Try to open each image and convert to RGB.
+Enhance image contrast for better feature extraction.
+Run CLIP inference 3 times and collect votes + confidences.
+Determine final label using majority vote and average confidence.
+Apply confidence threshold to decide if label is valid or "Unknown".
+Draw label on image with confidence percentage.
+Rename image using label prefix and save to output folder.
+Log result to CSV with filename, label, confidence, and status.
+Handle errors gracefully and log failures with remarks.
+Print completion message with output folder and CSV path
+
+============================= 14/10/25 ========================
+Loads the CLIP model (ViT-B/32) and sets GPU or CPU device.
+Creates input/output folders and an empty output.csv file.
+Defines prompt groups (like signature, shape, noisy image).
+Converts those text prompts into CLIP text embeddings.
+Adds light image augmentation (brightness, rotation).
+Loops through all images in the folder.
+For each image → encodes it with CLIP → compares with text prompts → picks best label.
+Draws the predicted label on the image and saves it.
+Logs results (filename, label, confidence) into output.csv.
+If a ground truth file exists → marks mismatches
